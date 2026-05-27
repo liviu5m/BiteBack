@@ -1,3 +1,14 @@
+import os
+from dotenv import load_dotenv
+from passlib.context import CryptContext
+import random
+from datetime import datetime, timedelta, timezone
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
+
+load_dotenv(verbose=True)
+brevoKey = os.getenv("BREVO_KEY")
+
 pwd_context = CryptContext(
     schemes=["sha256_crypt"],
     deprecated="auto",
@@ -9,3 +20,36 @@ def hashPassword(password: str):
 
 def verifyPassword(plainPassword, hashedPassword):
     return pwd_context.verify(plainPassword, hashedPassword)
+
+def generate6DigitCode():
+    return random.randint(100000, 999999)
+
+def nowPlusMinutes(n: int):
+    return datetime.now() + timedelta(minutes=n)
+
+
+def sendBrevoEmail(to_email: str, to_name: str, subject: str, html_content: str):
+    configuration = sib_api_v3_sdk.Configuration()
+    print(brevoKey)
+    configuration.api_key['api-key'] = brevoKey
+
+    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+
+    sender = {"name": "BiteBack", "email": "motpanliviu@gmail.com"}
+    to = [{"email": to_email, "name": to_name}]
+
+    send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
+        to=to,
+        sender=sender,
+        subject=subject,
+        html_content=html_content
+    )
+
+    try:
+        api_response = api_instance.send_transac_email(send_smtp_email)
+        print("Email sent successfully!")
+        print(api_response)
+        return True
+    except ApiException as e:
+        print(f"Exception when calling TransactionalEmailsApi->send_transac_email: {e}")
+        return False

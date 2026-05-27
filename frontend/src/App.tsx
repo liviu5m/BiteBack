@@ -6,6 +6,7 @@ import { AppProvider } from "./lib/AppProvider";
 import NonAuthRequiredRoute from "./components/middlewares/NonAuthRequiredRoute";
 import Login from "./components/pages/Login";
 import Signup from "./components/pages/Signup";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ function App() {
               />
             </Routes>
           </BrowserRouter>
+          <ToastContainer />
         </AppProvider>
       </QueryClientProvider>
     </>

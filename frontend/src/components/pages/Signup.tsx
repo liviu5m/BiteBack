@@ -3,6 +3,8 @@ import { ArrowRight, Lock, Mail, Signature, UserRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { signupUser } from "../../api/user";
+import type { AxiosError } from "axios";
+import { toast } from "react-toastify";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -18,9 +20,23 @@ const Signup = () => {
     mutationFn: () => signupUser(formData),
     onSuccess: (data) => {
       console.log(data);
+      const dbTime = new Date(data.createdAt);
+
+      console.log(dbTime.toLocaleString());
     },
-    onError: (err) => {
-      console.log(err);
+    onError: (err: AxiosError) => {
+      const response = err.response?.data as any;
+      console.log(response);
+
+      if (response?.detail && Array.isArray(response.detail)) {
+        const firstError = response.detail[0];
+        const errorMessage = firstError?.msg || "Validation error";
+        toast.error(errorMessage);
+      } else if (response?.detail && typeof response.detail === "string") {
+        toast.error(response.detail);
+      } else {
+        toast.error("An error occurred");
+      }
     },
   });
 
@@ -48,7 +64,7 @@ const Signup = () => {
           account
         </h1>
 
-        <p className="text-gray-400 text-sm mb-6 text-center">
+        <p className="text-gray-400 text-sm mb-6 text-center ">
           Join the community sharing food and cooking smarter.
         </p>
 
@@ -68,7 +84,6 @@ const Signup = () => {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="John Doe"
-                required
                 className="w-full bg-neutral-50/50 border border-gray-100 rounded-2xl pl-11 pr-4 py-3 text-gray-800 placeholder-gray-400 outline-none transition-all duration-200 focus:bg-white focus:border-[#1e4d3b] focus:ring-2 focus:ring-[#e8edeb]"
               />
             </div>
@@ -89,7 +104,6 @@ const Signup = () => {
                 value={formData.username}
                 onChange={handleChange}
                 placeholder="johndoe12"
-                required
                 className="w-full bg-neutral-50/50 border border-gray-100 rounded-2xl pl-11 pr-4 py-3 text-gray-800 placeholder-gray-400 outline-none transition-all duration-200 focus:bg-white focus:border-[#1e4d3b] focus:ring-2 focus:ring-[#e8edeb]"
               />
             </div>
@@ -110,7 +124,6 @@ const Signup = () => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="you@example.com"
-                required
                 className="w-full bg-neutral-50/50 border border-gray-100 rounded-2xl pl-11 pr-4 py-3 text-gray-800 placeholder-gray-400 outline-none transition-all duration-200 focus:bg-white focus:border-[#1e4d3b] focus:ring-2 focus:ring-[#e8edeb]"
               />
             </div>
@@ -131,7 +144,6 @@ const Signup = () => {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                required
                 className="w-full bg-neutral-50/50 border border-gray-100 rounded-2xl pl-11 pr-4 py-3 text-gray-800 placeholder-gray-400 outline-none transition-all duration-200 focus:bg-white focus:border-[#1e4d3b] focus:ring-2 focus:ring-[#e8edeb]"
               />
             </div>
@@ -152,7 +164,6 @@ const Signup = () => {
                 value={formData.passwordConfirmation}
                 onChange={handleChange}
                 placeholder="••••••••"
-                required
                 className="w-full bg-neutral-50/50 border border-gray-100 rounded-2xl pl-11 pr-4 py-3 text-gray-800 placeholder-gray-400 outline-none transition-all duration-200 focus:bg-white focus:border-[#1e4d3b] focus:ring-2 focus:ring-[#e8edeb]"
               />
             </div>
@@ -160,7 +171,7 @@ const Signup = () => {
 
           <button
             type="submit"
-            className="group flex items-center justify-center gap-2 bg-[#1e4d3b] hover:bg-[#153629] text-white px-6 py-4 rounded-full font-medium text-lg shadow-md transition-all duration-300 active:scale-98 mt-4"
+            className="group flex items-center justify-center gap-2 bg-[#1e4d3b] hover:bg-[#153629] text-white px-6 py-4 rounded-full font-medium text-lg shadow-md transition-all duration-300 active:scale-98 mt-4 cursor-pointer"
           >
             <span>Sign Up</span>
             <ArrowRight
