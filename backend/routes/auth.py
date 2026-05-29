@@ -59,3 +59,9 @@ def signup(data: SignupData, session: SessionDep):
     """
     sendBrevoEmail(user.email, user.name, "Verification account", html_content)
     return user
+
+
+
+@app.post("/verify")
+def verify(data: , session: SessionDep):
+

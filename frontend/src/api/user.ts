@@ -12,3 +12,7 @@ export async function signupUser(data: SignupData) {
   const response = await axios.post(`${baseUrl}/auth/signup`, data);
   return response.data;
 }
+
+export async function checkVerificationCode(code: string) {
+  const resposne = await axios.post(`${baseUrl}/auth/`);
+}
