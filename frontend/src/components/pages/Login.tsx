@@ -1,13 +1,27 @@
 import { useState } from "react";
 import { ArrowRight, Lock, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
+import { loginUserFunc } from "../../api/user";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const { mutate: login } = useMutation({
+    mutationKey: ["login-user"],
+    mutationFn: () => loginUserFunc(email, password),
+    onSuccess: (data) => {
+      console.log(data);
+    },
+    onError: (err) => {
+      console.log(err);
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    login();
   };
 
   return (

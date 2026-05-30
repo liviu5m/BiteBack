@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ArrowRight, Lock, Mail, Signature, UserRound } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { signupUser } from "../../api/user";
 import type { AxiosError } from "axios";
@@ -14,6 +14,7 @@ const Signup = () => {
     password: "",
     passwordConfirmation: "",
   });
+  const navigate = useNavigate();
 
   const { mutate: signup } = useMutation({
     mutationKey: ["signup-user"],
@@ -23,6 +24,9 @@ const Signup = () => {
       const dbTime = new Date(data.createdAt);
 
       console.log(dbTime.toLocaleString());
+      navigate("/auth/verify", {
+        state: { fromSignup: true, userId: data.id },
+      });
     },
     onError: (err: AxiosError) => {
       const response = err.response?.data as any;

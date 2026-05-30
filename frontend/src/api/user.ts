@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { SignupData } from "../lib/Types";
+import type { LoginData, SignupData } from "../lib/Types";
 
 const baseUrl = import.meta.env.VITE_API_URL;
 
@@ -13,6 +13,31 @@ export async function signupUser(data: SignupData) {
   return response.data;
 }
 
-export async function checkVerificationCode(code: string) {
-  const resposne = await axios.post(`${baseUrl}/auth/`);
+export async function checkVerificationCode(code: string, userId: number) {
+  const response = await axios.post(`${baseUrl}/auth/verify`, {
+    code,
+    userId,
+  });
+  return response.data;
+}
+
+export async function resendVerificationCode(userId: number) {
+  const response = await axios.post(`${baseUrl}/auth/resend`, {
+    userId,
+  });
+  return response.data;
+}
+
+export async function loginUserFunc(email: string, password: string) {
+  const response = await axios.post(
+    `${baseUrl}/auth/login`,
+    {
+      email,
+      password,
+    },
+    {
+      withCredentials: true,
+    },
+  );
+  return response.data;
 }

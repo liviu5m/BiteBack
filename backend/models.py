@@ -13,7 +13,7 @@ class User(SQLModel, table=True):
     email: str = Field(index=True, unique=True, nullable=False)
     password: str = Field(nullable=False, min_length=8)
     provider: str = Field(default="credentials")
-    verificationCode: str = Field(),
-    verificationExpiresAt: datetime = Field(),
+    verificationCode: str = Field(nullable=True)
+    verificationExpiresAt: datetime = Field(nullable=True)
     createdAt: datetime = Field(default=datetime.now(), nullable=False)
-
+    enabled: bool = Field(default=False)

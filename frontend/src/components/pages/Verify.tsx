@@ -10,6 +10,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import type { AxiosError } from "axios";
+import { checkVerificationCode, resendVerificationCode } from "../../api/user";
 
 const Verify = () => {
   const [verificationCode, setVerificationCode] = useState("");
@@ -33,7 +34,10 @@ const Verify = () => {
       navigate("/auth/login");
     },
     onError: (err: AxiosError) => {
-      setError(err.response?.data as string);
+      setError((err.response?.data as any).detail as string);
+      setTimeout(() => {
+        setError("");
+      }, 5000);
     },
   });
 
@@ -51,16 +55,24 @@ const Verify = () => {
     },
   });
 
-  console.log(error);
   return (
     <div>
       <div className="flex items-center justify-center min-h-screen flex-col px-4 py-8">
         <div className="w-full max-w-md p-6 sm:p-8 md:p-10 rounded-lg bg-white shadow z-20">
+          <p>
+            Code will expire in 5 minutes{" "}
+            <span
+              className="text-[#00ADB5] cursor-pointer"
+              onClick={() => resend()}
+            >
+              Resend verification code
+            </span>
+          </p>{" "}
           <form
             className="w-full"
             onSubmit={(e) => {
               e.preventDefault();
-              // verify();
+              verify();
             }}
           >
             <h1 className="text-center mb-7 flex items-center justify-center gap-3 font-semibold text-lg">
@@ -100,7 +112,7 @@ const Verify = () => {
                 <button
                   className="font-bold ml-3 cursor-pointer"
                   onClick={() => {
-                    resend();
+                    // resend();
                   }}
                 >
                   Resend

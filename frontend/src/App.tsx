@@ -7,6 +7,7 @@ import NonAuthRequiredRoute from "./components/middlewares/NonAuthRequiredRoute"
 import Login from "./components/pages/Login";
 import Signup from "./components/pages/Signup";
 import { ToastContainer } from "react-toastify";
+import Verify from "./components/pages/Verify";
 
 function App() {
   const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ function App() {
                     <Routes>
                       <Route path="/login" element={<Login />} />
                       <Route path="/signup" element={<Signup />} />
+                      <Route path="/verify" element={<Verify />} />
                     </Routes>
                   </NonAuthRequiredRoute>
                 }
