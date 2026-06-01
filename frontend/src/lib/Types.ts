@@ -19,3 +19,13 @@ export type LoginData = {
   email: string;
   password: string;
 };
+
+export type ItemCategory = "pantry" | "meat" | "dairy" | "produce" | "bakery" | "other";
+
+export type FridgeItem = {
+  id: number;
+  name: string;
+  weight: number;
+  category: ItemCategory;
+  days: number;
+}

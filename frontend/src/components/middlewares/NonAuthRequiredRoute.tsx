@@ -13,11 +13,11 @@ const NonAuthRequiredRoute: React.FC<NonAuthRequiredRouteProps> = ({
   const { user } = useAppContext();
   const location = useLocation();
 
-  // if (user) {
-  //   return (
-  //     <Navigate to="/" state={{ from: location.pathname }} replace={true} />
-  //   );
-  // }
+  if (user) {
+    return (
+      <Navigate to="/" state={{ from: location.pathname }} replace={true} />
+    );
+  }
 
   return <>{children}</>;
 };

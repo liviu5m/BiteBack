@@ -1,10 +1,12 @@
 import axios from "axios";
-import type { LoginData, SignupData } from "../lib/Types";
+import type { SignupData } from "../lib/Types";
 
 const baseUrl = import.meta.env.VITE_API_URL;
 
 export async function getAuthUserJwt() {
-  const response = await axios.get(`${baseUrl}`);
+  const response = await axios.get(`${baseUrl}/api/user/jwt`, {
+    withCredentials: true,
+  });
   return response.data;
 }
 
@@ -39,5 +41,12 @@ export async function loginUserFunc(email: string, password: string) {
       withCredentials: true,
     },
   );
+  return response.data;
+}
+
+export async function logoutUser() {
+  const response = await axios.post(`${baseUrl}/auth/logout`, {}, {
+    withCredentials: true
+  })
   return response.data;
 }

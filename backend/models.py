@@ -2,7 +2,17 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import func, Column, DateTime
-from sqlmodel import SQLModel, Field
+from sqlmodel import Enum, SQLModel, Field
+from enum import Enum
+
+
+class ItemCategory(str, Enum):
+    PRODUCE = "produce"
+    MEAT = "meat"
+    DAIRY = "dairy"
+    BAKERY = "bakery"
+    PANTRY = "pantry"
+    OTHER = "other"
 
 
 class User(SQLModel, table=True):
@@ -17,3 +27,12 @@ class User(SQLModel, table=True):
     verificationExpiresAt: datetime = Field(nullable=True)
     createdAt: datetime = Field(default=datetime.now(), nullable=False)
     enabled: bool = Field(default=False)
+
+
+class Item(SQLModel, table=True):
+    __tablename__ = "items"
+    id: int | None = Field(default=None, primary_key=True)
+    name: str = Field(nullable=False)
+    weight: int = Field(nullable=False)
+    category: ItemCategory = Field(nullable=False)
+    days: int = Field(nullable=False)

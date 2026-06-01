@@ -8,9 +8,17 @@ import Login from "./components/pages/Login";
 import Signup from "./components/pages/Signup";
 import { ToastContainer } from "react-toastify";
 import Verify from "./components/pages/Verify";
+import AuthRequiredRoute from "./components/middlewares/AuthRequiredRoute";
+import Dashboard from "./components/pages/Dashboard";
 
 function App() {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        refetchOnWindowFocus: false
+      },
+    },
+  });
 
   return (
     <>
@@ -25,15 +33,25 @@ function App() {
                   <NonAuthRequiredRoute>
                     <Routes>
                       <Route path="/login" element={<Login />} />
-                      <Route path="/signup" element={<Signup />} />
-                      <Route path="/verify" element={<Verify />} />
+                      <Route path="/signup" element={<Signup />} />{" "}
+                      <Route path="/verify" element={<Verify />} />{" "}
                     </Routes>
                   </NonAuthRequiredRoute>
                 }
               />
-            </Routes>
-          </BrowserRouter>
-          <ToastContainer />
+              <Route
+                path="/*"
+                element={
+                  <AuthRequiredRoute>
+                    <Routes>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                    </Routes>
+                  </AuthRequiredRoute>
+                }
+              />{" "}
+            </Routes>{" "}
+          </BrowserRouter>{" "}
+          <ToastContainer />{" "}
         </AppProvider>
       </QueryClientProvider>
     </>

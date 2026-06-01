@@ -7,6 +7,7 @@ from utils import hashPassword, generate6DigitCode, nowPlusMinutes, sendBrevoEma
 from datetime import datetime
 from sqlalchemy import select
 from utils import verifyPassword, createAccessToken
+
 app = APIRouter(prefix="/auth")
 
 
@@ -96,19 +97,23 @@ def verify(data: VerifyData, session: SessionDep):
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
     if user.verificationCode == data.code:
-        if(user.verificationExpiresAt < datetime.now()):
+        if user.verificationExpiresAt < datetime.now():
             raise HTTPException(status_code=400, detail="Verification Code has expired")
-        user.enabled = True; 
-        user.verificationCode = None;
-        user.verificationExpiresAt = None;
-        session.add(user);
-        session.commit();
-        session.refresh(user);
+        user.enabled = True
+        user.verificationCode = None
+        user.verificationExpiresAt = None
+        session.add(user)
+        session.commit()
+        session.refresh(user)
         return "Account successfully verified"
     else:
         raise HTTPException(status_code=400, detail="Code didn't match")
+
+
 class ResendData(BaseModel):
     userId: int
+
+
 @app.post("/resend")
 def resend(data: ResendData, session: SessionDep):
     userStmt = select(User).where(User.id == data.userId)
@@ -143,26 +148,40 @@ def resend(data: ResendData, session: SessionDep):
     sendBrevoEmail(user.email, user.name, "Verification account", html_content)
     return user
 
+
 class LoginData(BaseModel):
     email: str
     password: str
 
+
 @app.post("/login")
-def login(data: LoginData,response: Response, session: SessionDep):
+def login(data: LoginData, response: Response, session: SessionDep):
     stmt = select(User).where(User.email == data.email)
     user = session.exec(stmt).scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
     if verifyPassword(data.password, user.password):
-        jwt = createAccessToken(data={"userId": user.id, "email": user.email, "username": user.username, "name": user.name})
+        jwt = createAccessToken(
+            data={
+                "userId": user.id,
+                "email": user.email,
+                "username": user.username,
+                "name": user.name,
+            }
+        )
         response.set_cookie(
-        key="jwt",
-        value=jwt,
-        httponly=True,
-        secure=False,
-        samesite="lax",
-        max_age=60 * 60 * 24
-    )
+            key="jwt",
+            value=jwt,
+            httponly=True,
+            secure=False,
+            samesite="lax",
+            max_age=60 * 60 * 24,
+        )
         return "Successfully logged in"
     raise HTTPException(status_code=400, detail="Wrong credentials")
-    
+
+
+@app.post("/logout")
+def logout(response: Response):
+    response.delete_cookie("jwt")
+    return {"message": "Logged out successfully"}

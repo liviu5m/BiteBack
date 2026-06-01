@@ -1,18 +1,21 @@
 import { useState } from "react";
 import { ArrowRight, Lock, Mail } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { Link, useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { loginUserFunc } from "../../api/user";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { mutate: login } = useMutation({
     mutationKey: ["login-user"],
     mutationFn: () => loginUserFunc(email, password),
     onSuccess: (data) => {
       console.log(data);
+      queryClient.invalidateQueries({ queryKey: ["jwt-user"] })
+      navigate("/dashboard")
     },
     onError: (err) => {
       console.log(err);

@@ -1,7 +1,16 @@
 import { ArrowRight, Calendar, ChefHat, LayoutGrid } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAppContext } from "../../lib/AppProvider";
+import { useEffect } from "react";
 
 const Home = () => {
+  const { user } = useAppContext();
+  const navigate = useNavigate()
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
   return (
     <div className="bg-[#FAF7F2] w-screen h-screen flex items-center justify-center p-6">
       <div className="p-10 md:p-16 shadow-sm border border-gray-100 rounded-[32px] bg-white w-[850px] flex flex-col items-center text-center">

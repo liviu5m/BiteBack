@@ -4,6 +4,16 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
 
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

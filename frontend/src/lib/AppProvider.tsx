@@ -22,6 +22,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     queryFn: () => getAuthUserJwt(),
     retry: false,
   });
+  console.log(user);
+  console.log(isPending);
 
   return isPending ? (
     <Loader />
