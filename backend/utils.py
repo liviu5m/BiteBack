@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from fastapi import HTTPException, Request
 from passlib.context import CryptContext
 import random
 from datetime import datetime, timedelta, timezone
@@ -74,7 +75,7 @@ def decodeToken(token: str) -> Optional[dict]:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
-    except JWTError:
+    except:
         return None
 
 
@@ -83,3 +84,14 @@ def getUserIdFromToken(token: str) -> Optional[int]:
     if payload:
         return payload.get("userId")
     return None
+
+
+async def verifyUserTokenSession(request: Request):
+    jwtToken = request.cookies.get("jwt")
+
+    if not jwtToken:
+        raise HTTPException(status_code=401, detail="User not authenticated")
+
+    user = decodeToken(jwtToken)
+
+    return user

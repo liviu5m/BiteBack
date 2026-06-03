@@ -4,10 +4,12 @@ import type { FridgeItem, ItemCategory } from "../../lib/Types";
 import { ItemRow } from "../elements/ItemRow";
 import { Plus, PlusCircle, PlusIcon, Scan, ShieldAlert, ShieldCheck, Timer } from "lucide-react";
 import { Modal } from "../elements/Modal";
-import { useMutation } from "@tanstack/react-query";
-import { addItemFunc } from "@/api/item";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { addItemFunc, getItemsByUser } from "@/api/item";
+import { toast } from "react-toastify";
 const Dashboard = () => {
-  const [items, setItems] = useState<FridgeItem[]>([]);
+  const queryClient = useQueryClient();
+
   const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
   const [isAddItemModalOpened, setIsAddModalOpened] = useState(false);
   const toggleCheck = (id: number) => {
@@ -16,13 +18,10 @@ const Dashboard = () => {
   const [itemData, setItemData] = useState<FridgeItem>({
     id: -1,
     name: "",
-    weight: 0,
+    weight: '',
     category: "produce",
-    days: 0
+    days: ''
   });
-  const actionRequired = items.filter((item) => item.days <= 2);
-  const expiringSoon = items.filter((item) => item.days >= 3 && item.days <= 5);
-  const safeStorage = items.filter((item) => item.days > 5);
 
   const formatCategory = (cat: string) => cat.charAt(0).toUpperCase() + cat.slice(1);
 
@@ -31,27 +30,62 @@ const Dashboard = () => {
     mutationFn: () => addItemFunc(itemData),
     onSuccess: (data) => {
       console.log(data);
+      setIsAddModalOpened(false)
+      toast("Item added successfully")
+      queryClient.invalidateQueries({ queryKey: ["items-user"] })
     },
     onError: (err) => {
       console.log(err);
     }
   })
 
+  const { data: items } = useQuery({
+    queryKey: ["items-user"],
+    queryFn: () => getItemsByUser()
+  })
+
+  const actionRequired = items ? items.filter((item) => Number(item.days) <= 2) : [];
+  const expiringSoon = items ? items.filter((item) => Number(item.days) >= 3 && Number(item.days) <= 5) : [];
+  const safeStorage = items ? items.filter((item) => Number(item.days) > 5) : [];
+  useEffect(() => {
+    if (itemData.weight[0] == '0' && itemData.weight.length > 1) setItemData({ ...itemData, weight: itemData.weight.slice(1) })
+    if (itemData.days[0] == '0' && itemData.days.length > 1) setItemData({ ...itemData, days: itemData.days.slice(1) })
+  }, [itemData.weight, itemData.days]);
+
   useEffect(() => {
     setItemData({
       id: -1,
       name: "",
-      weight: 0,
+      weight: '',
       category: "produce",
-      days: 0,
+      days: '',
     })
   }, [isAddItemModalOpened]);
 
   return (
     <BodyLayout>
-      <div className="min-h-screen w-[calc(100vw-350px)] p-6 flex justify-center items-start">
+      <div className="min-h-screen w-[calc(100vw-350px)] p-6 flex justify-center items-start gap-10">
+        <div className="bg-white p-10 rounded-2xl shadow w-80 flex flex-col items-center justify-center gap-10">
+          <h1 className="text-[#1e4d3b] text-xl font-bold">Your Impact</h1>
+          <div
+            className="relative flex items-center justify-center rounded-full shadow-inner"
+            style={{
+              width: "160px",
+              height: "160px",
+              background: `conic-gradient(#10b981 ${60}%, #f3f4f6 ${60}% 100%)`
+            }}
+          >
+            <div className="absolute w-[132px] h-[132px] bg-white rounded-full flex flex-col items-center justify-center select-none">
+              <span className="text-3xl font-black text-emerald-900 leading-none">
+                {60}%
+              </span>
+              <span className="text-xs font-bold text-gray-400 tracking-wider mt-1">
+                SAVED
+              </span>
+            </div>
+          </div>
+        </div>
         <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.01)] w-full max-w-[700px] p-10 flex flex-col gap-8">
-
           <div className="flex items-center justify-between border-b border-gray-50 pb-6">
             <h1 className="text-3xl font-bold text-[#1e4d3b] tracking-tight">
               Virtual Fridge
@@ -163,12 +197,12 @@ const Dashboard = () => {
                 <div className="flex flex-col gap-3 ">
                   <label htmlFor="name" className="text-[#1E4D3B]">Weight (g)</label>
                   <input type="number" className=" px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" min={0}
-                    value={itemData.weight} onChange={(e) => setItemData({ ...itemData, weight: Number(e.target.value) })}
+                    value={itemData.weight} onChange={(e) => setItemData({ ...itemData, weight: e.target.value })}
                   />
                 </div>
                 <div className="flex flex-col gap-3 ">
                   <label htmlFor="name" className="text-[#1E4D3B]">Category</label>
-                  <select className=" px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" value={itemData.category} onChange={(e) => setItemData({ ...itemData, category: e.target.value as ItemCategory })} defaultValue={"produce"} >
+                  <select className="px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" value={itemData.category} onChange={(e) => setItemData({ ...itemData, category: e.target.value as ItemCategory })} defaultValue={"produce"} >
                     <option value="produce" >Produce</option>
                     <option value="dairy">Dairy</option>
                     <option value="meat">Meat</option>
@@ -180,9 +214,9 @@ const Dashboard = () => {
               </div>
               <div className="w-full">
                 <label htmlFor="name" className="text-[#1E4D3B]">Days until expiry</label>
-                <input type="number" placeholder="e.g. Whole Milk" className="mt-2 w-full px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" value={itemData.days} onChange={(e) => setItemData({ ...itemData, days: Number(e.target.value) })} />
+                <input type="number" placeholder="e.g. Whole Milk" className="mt-2 w-full px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" value={itemData.days} onChange={(e) => setItemData({ ...itemData, days: e.target.value })} />
               </div>
-              <button className={`text-white flex items-center justify-center gap-4 ${itemData.name != "" && itemData.weight != 0 && itemData.days != 0 ? "bg-[#1E4D3B] cursor-pointer" : "bg-[#A5B9B1]"}  rounded-2xl px-5 py-3 font-semibold text-xl`} disabled={itemData.name == "" || itemData.weight == 0 || itemData.days == 0}>
+              <button className={`text-white flex items-center justify-center gap-4 ${itemData.name != "" && itemData.weight && itemData.days ? "bg-[#1E4D3B] cursor-pointer" : "bg-[#A5B9B1]"} rounded-2xl px-5 py-3 font-semibold text-xl`} disabled={itemData.name == "" || itemData.weight == '' || itemData.days == ''}>
                 <PlusIcon />
                 <span>Add to fridge</span>
               </button>

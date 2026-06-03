@@ -22,7 +22,6 @@ export const ItemRow = ({
       className={`flex items-center justify-between border p-4 rounded-2xl select-none transition-all duration-200 ${rowClass}`}
     >
       <div className="flex items-center gap-4">
-        {/* Custom Stylized Checkbox element */}
         <div className="relative flex items-center justify-center">
           <input
             type="checkbox"
@@ -48,7 +47,6 @@ export const ItemRow = ({
           )}
         </div>
 
-        {/* Item Metadata */}
         <div className="flex flex-col leading-tight">
           <span className={`text-lg font-bold text-slate-800 ${isChecked ? "line-through text-slate-400" : ""}`}>
             {item.name}
@@ -59,9 +57,8 @@ export const ItemRow = ({
         </div>
       </div>
 
-      {/* Expiry Counter Pill */}
       <span className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap min-w-[70px] text-center shadow-sm ${badgeClass}`}>
-        {item.daysUntilExpiry} {item.daysUntilExpiry === 1 ? "day" : "days"}
+        {item.days} {item.days === 1 ? "day" : "days"}
       </span>
     </li>
   );

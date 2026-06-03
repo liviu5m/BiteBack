@@ -9,3 +9,10 @@ export async function addItemFunc(data: FridgeItem) {
   })
   return response.data
 }
+
+export async function getItemsByUser() {
+  const response = await axios.get(`${baseUrl}/api/item`, {
+    withCredentials: true
+  })
+  return response.data;
+}

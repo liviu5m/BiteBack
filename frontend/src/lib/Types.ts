@@ -25,7 +25,7 @@ export type ItemCategory = "pantry" | "meat" | "dairy" | "produce" | "bakery" | 
 export type FridgeItem = {
   id: number;
   name: string;
-  weight: number;
+  weight: string;
   category: ItemCategory;
-  days: number;
+  days: string;
 }

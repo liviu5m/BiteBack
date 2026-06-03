@@ -1,0 +1,15 @@
+# Python / Backend ignores
+**/__pycache__/
+**/.venv/
+**/*.pyc
+backend/.env
+
+# Node / Frontend ignores
+**/node_modules/
+**/dist/
+**/build/
+frontend/.env
+
+# IDE / System ignores
+**/.idea/
+**/.DS_Store

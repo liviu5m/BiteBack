@@ -1,10 +1,10 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from database import SessionDep
 from models import User
-from utils import decodeToken
+from utils import decodeToken, verifyUserTokenSession
 
-app = APIRouter(prefix="/api/user")
+app = APIRouter(prefix="/api/user", dependencies=[Depends(verifyUserTokenSession)])
 
 
 @app.get("/jwt")
