@@ -2,15 +2,17 @@ import { useEffect, useState } from "react";
 import BodyLayout from "../layouts/BodyLayout"
 import type { FridgeItem, ItemCategory } from "../../lib/Types";
 import { ItemRow } from "../elements/ItemRow";
-import { Plus, PlusCircle, PlusIcon, Scan, ShieldAlert, ShieldCheck, Timer } from "lucide-react";
+import { ChefHat, Plus, PlusCircle, PlusIcon, Scan, ShieldAlert, ShieldCheck, Timer } from "lucide-react";
 import { Modal } from "../elements/Modal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { addItemFunc, getItemsByUser } from "@/api/item";
 import { toast } from "react-toastify";
+import { motion } from "framer-motion"
+import { useAppContext } from "@/lib/AppProvider";
+import { Link } from "react-router-dom";
 const Dashboard = () => {
+  const { checkedItems, setCheckedItems } = useAppContext()
   const queryClient = useQueryClient();
-
-  const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
   const [isAddItemModalOpened, setIsAddModalOpened] = useState(false);
   const toggleCheck = (id: number) => {
     setCheckedItems((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -22,6 +24,7 @@ const Dashboard = () => {
     category: "produce",
     days: ''
   });
+  const itemsChecked = Object.values(checkedItems).filter(el => el).length
 
   const formatCategory = (cat: string) => cat.charAt(0).toUpperCase() + cat.slice(1);
 
@@ -224,6 +227,30 @@ const Dashboard = () => {
           </div >
         }
         />
+        }
+        {
+          itemsChecked > 0 && <motion.div
+            initial={{ opacity: 0, y: 100, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: 100, x: "-50%" }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed left-1/2 bottom-10 z-50 bg-[#1E4D3B] text-white px-8 py-5 rounded-xl flex items-center justify-between gap-30"
+          >
+            <div className="flex items-center justify-between gap-5">
+              <div className="w-12 h-12 text-white flex items-center justify-center bg-gray-50/10 rounded-full">
+                <ChefHat />
+              </div>
+              <div>
+                <h2 className="font-semibold text-lg">{itemsChecked} items selected</h2>
+                <p className="text-sm text-gray-300">Ready to rescue</p>
+              </div>
+            </div>
+            <div>
+              <Link to={"/cook"} className="bg-white text-[#1E4D3B] font-semibold rounded-xl px-5 py-3 cursor-pointer">
+                Find Recipes
+              </Link>
+            </div>
+          </motion.div>
         }
       </div >
     </BodyLayout >

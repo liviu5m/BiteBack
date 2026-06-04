@@ -10,6 +10,7 @@ import { ToastContainer } from "react-toastify";
 import Verify from "./components/pages/Verify";
 import AuthRequiredRoute from "./components/middlewares/AuthRequiredRoute";
 import Dashboard from "./components/pages/Dashboard";
+import Cook from "./components/pages/Cook";
 
 function App() {
   const queryClient = new QueryClient({
@@ -45,6 +46,7 @@ function App() {
                   <AuthRequiredRoute>
                     <Routes>
                       <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/cook" element={<Cook />} />
                     </Routes>
                   </AuthRequiredRoute>
                 }

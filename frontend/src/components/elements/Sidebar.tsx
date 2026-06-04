@@ -5,37 +5,24 @@ import {
   MessageCircle,
   ShoppingBag,
   LogOut,
-  Settings,
 } from "lucide-react";
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
 import { logoutUser } from "../../api/user";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const MENU_ITEMS = [
-  { id: "fridge", label: "Fridge", icon: Home },
-  { id: "cook", label: "Cook", icon: ChefHat },
-  { id: "plan", label: "Plan", icon: Calendar },
-  { id: "share", label: "Share", icon: ShoppingBag },
-  { id: "chat", label: "Chat", icon: MessageCircle },
+  { id: "fridge", label: "Fridge", icon: Home, url: "/dashboard" },
+  { id: "cook", label: "Cook", icon: ChefHat, url: "/cook" },
+  { id: "plan", label: "Plan", icon: Calendar, url: "/plan" },
+  { id: "share", label: "Share", icon: ShoppingBag, url: "/share" },
+  { id: "chat", label: "Chat", icon: MessageCircle, url: "/chat" },
 ] as const;
 
-type TabId = (typeof MENU_ITEMS)[number]["id"];
 
-interface SidebarProps {
-  activeTab?: TabId;
-  onTabChange?: (id: TabId) => void;
-}
-
-const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
-  const [internalActive, setInternalActive] = useState<TabId>("fridge");
+const Sidebar = () => {
   const navigate = useNavigate();
-  const active = activeTab ?? internalActive;
-  const handleTabClick = (id: TabId) => {
-    if (onTabChange) onTabChange(id);
-    else setInternalActive(id);
-  };
+  const location = useLocation();
 
   const { mutate: logout } = useMutation({
     mutationKey: ["logout-user"],
@@ -64,17 +51,17 @@ const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
 
         <ul className="mt-10 flex flex-col gap-3">
           {MENU_ITEMS.map((item) => {
-            const isActive = active === item.id;
+            const isActive = location.pathname == item.url;
             const Icon = item.icon;
 
             return (
-              <li
+              <Link
+                to={item.url}
                 key={item.id}
                 className={`relative flex items-center gap-3 px-5 py-3 rounded-2xl text-lg font-medium cursor-pointer transition-colors duration-200 ${isActive
                   ? "text-[#1e4d3b]"
                   : "text-slate-400 hover:text-slate-600"
                   }`}
-                onClick={() => handleTabClick(item.id)}
               >
                 {isActive && (
                   <motion.div
@@ -91,11 +78,11 @@ const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
                   />
                   <span>{item.label}</span>
                 </span>
-              </li>
+              </Link>
             );
           })}
         </ul>
-      </div>
+      </div >
 
       <div className="border-t border-gray-100 pt-5 flex flex-col gap-1">
         <div className="flex items-center gap-3 px-5 py-3 rounded-2xl text-lg font-medium text-rose-500/80 hover:text-rose-600 cursor-pointer transition-colors" onClick={() => logout()}>
@@ -103,7 +90,7 @@ const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
           <span>Sign Out</span>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

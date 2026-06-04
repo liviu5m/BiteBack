@@ -8,6 +8,8 @@ import { getAuthUserJwt } from "../api/user";
 
 interface AppContextType {
   user: User | null;
+  checkedItems: Record<number, boolean>
+  setCheckedItems: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -17,13 +19,12 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
+  const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
   const { data: user, isPending } = useQuery({
     queryKey: ["jwt-user"],
     queryFn: () => getAuthUserJwt(),
     retry: false,
   });
-  console.log(user);
-  console.log(isPending);
 
   return isPending ? (
     <Loader />
@@ -31,6 +32,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     <AppContext.Provider
       value={{
         user,
+        checkedItems,
+        setCheckedItems
       }}
     >
       {children}
