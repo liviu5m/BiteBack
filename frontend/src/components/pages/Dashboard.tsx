@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import BodyLayout from "../layouts/BodyLayout"
 import type { FridgeItem, ItemCategory } from "../../lib/Types";
 import { ItemRow } from "../elements/ItemRow";
-import { ChefHat, Plus, PlusCircle, PlusIcon, Scan, ShieldAlert, ShieldCheck, Timer } from "lucide-react";
+import { ChefHat, Plus, PlusCircle, PlusIcon, Scan, ShieldAlert, ShieldCheck, Timer, X } from "lucide-react";
 import { Modal } from "../elements/Modal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { addItemFunc, getItemsByUser } from "@/api/item";
@@ -88,7 +88,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.01)] w-full max-w-[700px] p-10 flex flex-col gap-8">
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.01)] w-full max-w-[700px] p-10 flex flex-col gap-8 h-[calc(100vh-100px)]">
           <div className="flex items-center justify-between border-b border-gray-50 pb-6">
             <h1 className="text-3xl font-bold text-[#1e4d3b] tracking-tight">
               Virtual Fridge
@@ -96,10 +96,21 @@ const Dashboard = () => {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => {
+                  localStorage.removeItem("items")
+                  setCheckedItems({})
+                }}
+                type="button"
+                className="flex items-center gap-1.5 px-4 py-2 bg-white text-red-500 rounded-xl text-sm font-semibold hover:bg-red-500 cursor-pointer hover:text-white shadow-sm transition-all"
+              >
+                <X size={16} />
+                <span>Clear</span>
+              </button>
+              <button
+                onClick={() => {
                   setIsAddModalOpened(true);
                 }}
                 type="button"
-                className="flex items-center gap-1.5 px-4 py-2 bg-[#1e4d3b] text-white rounded-xl text-sm font-semibold hover:bg-[#153629] shadow-sm transition-all"
+                className="cursor-pointer flex items-center gap-1.5 px-4 py-2 bg-[#1e4d3b] text-white rounded-xl text-sm font-semibold hover:bg-[#153629] shadow-sm transition-all"
               >
                 <Plus size={16} />
                 <span>Add</span>
@@ -107,7 +118,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-8 overflow-y-scroll h-full">
 
             {actionRequired.length > 0 && (
               <div className="flex flex-col gap-3">

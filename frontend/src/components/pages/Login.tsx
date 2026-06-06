@@ -91,7 +91,7 @@ const Login = () => {
 
           <button
             type="submit"
-            className="group flex items-center justify-center gap-2 bg-[#1e4d3b] hover:bg-[#153629] text-white px-6 py-4 rounded-full font-medium text-lg shadow-md transition-all duration-300 active:scale-98 mt-4"
+            className="group flex items-center justify-center gap-2 bg-[#1e4d3b] hover:bg-[#153629] text-white px-6 py-4 rounded-full font-medium text-lg shadow-md transition-all duration-300 active:scale-98 mt-4 cursor-pointer"
           >
             <span>Sign In</span>
             <ArrowRight

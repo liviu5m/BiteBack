@@ -19,12 +19,20 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
+
+  const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>(() => {
+    const saved = localStorage.getItem("items");
+    return saved ? JSON.parse(saved) : {};
+  });
   const { data: user, isPending } = useQuery({
     queryKey: ["jwt-user"],
     queryFn: () => getAuthUserJwt(),
     retry: false,
   });
+
+  useEffect(() => {
+    localStorage.setItem("items", JSON.stringify(checkedItems));
+  }, [checkedItems]);
 
   return isPending ? (
     <Loader />

@@ -16,3 +16,27 @@ export async function getItemsByUser() {
   })
   return response.data;
 }
+
+export async function getItemsByIds(ids: string[]) {
+  const params = new URLSearchParams();
+  ids.forEach(id => params.append('ids', id));
+  console.log(params);
+
+  const response = await axios.get(`${baseUrl}/api/item/ids`, {
+    params: params,
+    withCredentials: true
+  });
+  return response.data;
+}
+
+export async function getFoodByItems(ids: string[]) {
+  const params = new URLSearchParams();
+  ids.forEach(id => params.append('ids', id));
+  console.log(params);
+
+  const response = await axios.get(`${baseUrl}/api/item/food`, {
+    params: params,
+    withCredentials: true
+  });
+  return response.data;
+}

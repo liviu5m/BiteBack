@@ -1,7 +1,8 @@
 from typing import Any
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
-from sqlmodel import select
+from sqlmodel import col, select
+from ai import getProductByAllMatches
 from database import SessionDep
 from models import Item, ItemCategory
 from utils import verifyUserTokenSession
@@ -44,4 +45,23 @@ def getItemByUserId(
 
     stmt = select(Item).where(Item.user_id == user["userId"])
     items = session.exec(stmt).all()
+    return items
+
+
+@app.get("/ids")
+def getItemsByIds(session: SessionDep, ids: list[int] = Query(default=[])):
+    if not ids:
+        return []
+    stmt = select(Item).where(col(Item.id).in_(ids))
+    items = session.exec(stmt).all()
+    return items
+
+
+@app.get("/food")
+def getProductByMatches(session: SessionDep, ids: list[int] = Query(default=[])):
+    if not ids:
+        return []
+    stmt = select(Item).where(col(Item.id).in_(ids))
+    items = session.exec(stmt).all()
+    getProductByAllMatches()
     return items
