@@ -7,7 +7,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { logoutUser } from "../../api/user";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -19,17 +19,17 @@ const MENU_ITEMS = [
   { id: "chat", label: "Chat", icon: MessageCircle, url: "/chat" },
 ] as const;
 
-
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const queryClient = useQueryClient()
   const { mutate: logout } = useMutation({
     mutationKey: ["logout-user"],
     mutationFn: () => logoutUser(),
     onSuccess: (data) => {
       console.log(data);
       navigate("/auth/login")
+      queryClient.invalidateQueries({ queryKey: ["jwt-user"] })
     },
     onError: (err) => {
       console.log(err);
