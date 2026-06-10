@@ -10,14 +10,22 @@ import { motion } from "framer-motion";
 import { RecipeCard } from "../elements/RecipeCard"
 import Loader from "../elements/Loader"
 import SmallLoader from "../elements/SmallLoader"
+import { findRecipeByUserId } from "@/api/recipe"
 
 const Cook = () => {
-  const { checkedItems } = useAppContext();
+  const { checkedItems, user } = useAppContext();
   const [tab, setTab] = useState("ready");
   const { data: items, isLoading: isItemsLoading } = useQuery({
     queryKey: ["items-ids"],
     queryFn: () => getItemsByIds(Object.keys(checkedItems))
   })
+
+
+  const { data: recipes } = useQuery({
+    queryKey: ["get-recipes", user.id],
+    queryFn: () => findRecipeByUserId()
+  })
+
   const checkedKeys = Object.keys(checkedItems);
   const hasItemsSelected = checkedKeys.length > 0;
   const itemsCacheKey = [...checkedKeys].sort().join(",");
@@ -121,13 +129,19 @@ const Cook = () => {
               }`}
           >
             <Bookmark className="w-4 h-4" />
-            <span>Saved recipes ({0})</span>
+            <span>Saved recipes ({recipes.length})</span>
           </button>
         </div>
         <div className="flex items-center justify-center w-full">
-          {isLoading && hasItemsSelected ? <SmallLoader /> :
+          {tab == "ready" || tab == "missing" ?
+            isLoading && hasItemsSelected ? <SmallLoader /> :
+              <div className="flex flex-col gap-8">
+                {foods.map((food, index) => <RecipeCard key={index} recipe={food} recipes={recipes} />)}
+              </div>
+            :
             <div className="flex flex-col gap-8">
-              {foods.map((food, index) => <RecipeCard key={index} recipe={food} />)}
+              {recipes.length == 0 && <p className="text-lg font-semibold">No saved recipe, visit some and save them.</p>}
+              {recipes.map((recipe, index) => <RecipeCard key={index} recipe={{ ...recipe, missing_ingredients: JSON.parse(recipe.missing_ingredients), used_ingredients: JSON.parse(recipe.used_ingredients) }} recipes={recipes} />)}
             </div>
           }
         </div>

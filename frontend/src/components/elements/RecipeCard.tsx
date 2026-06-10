@@ -1,31 +1,45 @@
-
 import React from 'react';
 import { Clock, Leaf, AlertCircle, Snowflake, ChevronDown, Bookmark, ThumbsDown } from 'lucide-react';
-
-interface MissingIngredient {
-  name: string;
-  importance: string;
-}
-
-interface RecipeData {
-  recipe_name: string;
-  match_percentage: number;
-  prep_time_minutes: number;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  cuisine_tag: string;
-  hook_line: string;
-  used_ingredients: string[];
-  missing_ingredients: MissingIngredient[];
-  preservation_tip: string;
-  image_url?: string;
-}
-
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type RecipeData } from "@/lib/Types"
+import { deleteRecipeFunc, saveRecipeFunc } from '@/api/recipe';
+import { useAppContext } from '@/lib/AppProvider';
 interface RecipeCardProps {
   recipe: RecipeData;
   onMarkAsCooked?: () => void;
+  recipes: RecipeData[]
 }
 
-export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onMarkAsCooked }) => {
+export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onMarkAsCooked, recipes }) => {
+  const queryClient = useQueryClient();
+  const { user } = useAppContext();
+  const saved = recipes?.find((r) => r.recipe_name === recipe.recipe_name);
+  const { mutate: saveRecipe } = useMutation({
+    mutationKey: ["save-recipe", recipe.recipe_name],
+    mutationFn: () => saveRecipeFunc(recipe),
+    onSuccess: (data) => {
+      console.log(data);
+      queryClient.invalidateQueries({ queryKey: ["get-recipes", user.id] })
+    },
+    onError: (err) => {
+      console.log(err);
+    }
+  })
+
+  const { mutate: deleteRecipe } = useMutation({
+    mutationKey: ["delete-recipe", recipe.recipe_name],
+    mutationFn: (id: number) => deleteRecipeFunc(id),
+    onSuccess: (data) => {
+      console.log(data);
+      queryClient.invalidateQueries({ queryKey: ["get-recipes", user.id] })
+    },
+    onError: (err) => {
+      console.log(err);
+    }
+  })
+
+
+
   return (
     <div className=" flex flex-col md:flex-row max-w-3xl bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden font-sans">
 
@@ -81,15 +95,17 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onMarkAsCooked }
               <h4 className="text-xs font-bold text-gray-400 tracking-wider uppercase mb-2">
                 Missing
               </h4>
-              {recipe.missing_ingredients.map((ing, idx) => (
-                <div key={idx} className="inline-flex items-start gap-2 bg-gray-50 border border-gray-200 rounded-xl p-2.5 max-w-xs">
-                  <AlertCircle size={18} className="text-gray-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-700">{ing.name}</p>
-                    <p className="text-xs text-gray-400 font-medium">{ing.importance}</p>
+              <div className='flex gap-2'>
+                {recipe.missing_ingredients.map((ing, idx) => (
+                  <div key={idx} className="inline-flex items-start gap-2 bg-gray-50 border border-gray-200 rounded-xl p-2.5 max-w-xs">
+                    <AlertCircle size={18} className="text-gray-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-700">{ing.name}</p>
+                      <p className="text-xs text-gray-400 font-medium">{ing.importance}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
 
@@ -105,28 +121,23 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onMarkAsCooked }
         </div>
 
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <button className="flex items-center gap-1 font-semibold text-gray-700 hover:text-gray-900 transition-colors text-sm">
-            Step-by-step
-            <ChevronDown size={18} className="mt-0.5" />
+          <button className={`p-2.5 ${saved ? "bg-[#1b4332] text-white hover:bg-[#143225]" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"} border cursor-pointer border-gray-200 rounded-xl  transition-all`}
+            onClick={() => {
+              if (!saved) saveRecipe()
+              else deleteRecipe(saved.id)
+            }}
+          >
+            <Bookmark size={18} />
           </button>
-
-          <div className="flex items-center gap-2">
-            <button className="p-2.5 text-gray-400 hover:text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all">
-              <Bookmark size={18} />
-            </button>
-            <button className="p-2.5 text-gray-400 hover:text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all">
-              <ThumbsDown size={18} />
-            </button>
-            <button
-              onClick={onMarkAsCooked}
-              className="bg-[#1b4332] hover:bg-[#143225] text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all shadow-sm"
-            >
-              Mark as Cooked
-            </button>
-          </div>
+          <button
+            onClick={onMarkAsCooked}
+            className="bg-[#1b4332] hover:bg-[#143225] text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all shadow-sm"
+          >
+            Mark as Cooked
+          </button>
         </div>
 
       </div>
-    </div>
+    </div >
   );
 };

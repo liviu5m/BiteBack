@@ -2,10 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from database import init_db
-from models import User, Item
+from models import User, Item, Recipe
 from routes.auth import app as authRouter
 from routes.user import app as userRouter
 from routes.item import app as itemRouter
+from routes.recipe import app as recipeRouter
 
 app = FastAPI()
 
@@ -22,6 +23,7 @@ init_db()
 app.include_router(authRouter)
 app.include_router(userRouter)
 app.include_router(itemRouter)
+app.include_router(recipeRouter)
 
 
 @app.get("/")

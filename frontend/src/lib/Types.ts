@@ -29,3 +29,22 @@ export type FridgeItem = {
   category: ItemCategory;
   days: string;
 }
+
+export type MissingIngredient = {
+  name: string;
+  importance: string;
+}
+
+export type RecipeData = {
+  id?: number;
+  recipe_name: string;
+  match_percentage: number;
+  prep_time_minutes: number;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  cuisine_tag: string;
+  hook_line: string;
+  used_ingredients: string[];
+  missing_ingredients: MissingIngredient[];
+  preservation_tip: string;
+  image_url?: string;
+}

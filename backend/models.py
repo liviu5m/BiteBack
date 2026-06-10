@@ -16,6 +16,12 @@ class ItemCategory(str, Enum):
     OTHER = "other"
 
 
+class RecipeDifficulty(str, Enum):
+    EASY = ("Easy",)
+    MEDIUM = "Medium"
+    HARD = "Hard"
+
+
 class User(SQLModel, table=True):
     __tablename__: str = "users"
     id: int | None = Field(default=None, primary_key=True)
@@ -29,6 +35,7 @@ class User(SQLModel, table=True):
     createdAt: datetime = Field(default=datetime.now(), nullable=False)
     enabled: bool = Field(default=False)
     items: List["Item"] = Relationship(back_populates="user")
+    recipes: List["Recipe"] = Relationship(back_populates="user")
 
 
 class Item(SQLModel, table=True):
@@ -41,3 +48,20 @@ class Item(SQLModel, table=True):
     user_id: int = Field(foreign_key="users.id", nullable=False)
     user: "User" = Relationship(back_populates="items")
     saved: bool = Field(default=False)
+
+
+class Recipe(SQLModel, table=True):
+    __tablename__: str = "recipes"
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="users.id", nullable=False)
+    user: User = Relationship(back_populates="recipes")
+    recipe_name: str = Field(nullable=False)
+    match_percentage: int = Field(nullable=False)
+    prep_time_minutes: int = Field(nullable=False)
+    difficulty: RecipeDifficulty = Field(nullable=False)
+    cuisine_tag: str = Field(nullable=False)
+    hook_line: str = Field(nullable=False)
+    used_ingredients: str = Field(nullable=False)
+    missing_ingredients: str = Field(nullable=False)
+    preservation_tip: str = Field(nullable=False)
+    image_url: str = Field(nullable=False)

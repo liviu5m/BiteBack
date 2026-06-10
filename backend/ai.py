@@ -4,10 +4,12 @@ from groq import Groq
 from models import Item
 import os
 import httpx
+from google import genai
 
 load_dotenv()
 PIXABAY_API_KEY = os.getenv("PIXABAY_KEY")
 client = Groq()
+googleClient = genai.Client()
 
 
 def get_recipe_image(recipe_name: str) -> str:
@@ -61,7 +63,7 @@ TASKS:
 3. Mix match percentages intentionally according to the filtering logic provided in the constraints.
 4. Craft the "hook_line" to clearly explain why this recipe makes sense based on expiring items or heavy weights.
 5. Respond ONLY with raw, parseable JSON. Do not include markdown code blocks (```json).
-
+6. Take care so that you only use the item that I gave you don't add anything, and use them to make realistic food with specific items that I gave 
 SCHEMA TYPE:
 [
   {{
@@ -77,9 +79,8 @@ SCHEMA TYPE:
   }}
 ]
 """
-    print(content)
-    recipes = getAIResult(content)
-    print(recipes)
+    recipes = getGoogleAIResult(content)
+    # recipes = getAIResult(content)
     if not isinstance(recipes, list):
         return []
 
@@ -114,3 +115,12 @@ def getAIResult(content: str):
         cleaned_json = cleaned_json.split("```")[1].split("```")[0].strip()
 
     return json.loads(cleaned_json)
+
+
+def getGoogleAIResult(content: str):
+
+    response = googleClient.models.generate_content(
+        model="gemini-3.5-flash",
+        contents=content,
+    )
+    return json.loads(response.text)
