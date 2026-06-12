@@ -30,7 +30,7 @@ def getProductMatchingItems(items: list[Item], tab: str):
     inventory_lines = []
     for item in items:
         inventory_lines.append(
-            f"- {item.name} (Weight: {item.weight}, Expires in: {item.days} days)"
+            f"- #{item.id} - {item.name} (Weight: {item.weight}, Expires in: {item.days} days)"
         )
     inventory_str = "\n".join(inventory_lines)
     allowed_names = ", ".join([f"'{item.name}'" for item in items])
@@ -73,7 +73,7 @@ SCHEMA TYPE:
     "difficulty": "Easy" | "Medium" | "Hard",
     "cuisine_tag": "string",
     "hook_line": "string",
-    "used_ingredients": ["string"],
+    "used_ingredients": [{{"name":"string"}}, {{"id": "int"}}],
     "missing_ingredients": [{{ "name": "string", "importance": "Critical" | "Skip – won't ruin the dish" }}],
     "preservation_tip": "string"
   }}

@@ -52,3 +52,21 @@ export async function deleteItemByid(id: number) {
   })
   return response.data
 }
+
+export async function markAsCookedFunc(ids: string[]) {
+  const params = new URLSearchParams();
+  ids.forEach(id => params.append('ids', id));
+
+  const response = await axios.get(`${baseUrl}/api/item/cook`, {
+    params: params,
+    withCredentials: true
+  });
+  return response.data;
+}
+
+export async function getPercentageSaved() {
+  const response = await axios.get(`${baseUrl}/api/item/saved`, {
+    withCredentials: true
+  })
+  return response.data;
+}

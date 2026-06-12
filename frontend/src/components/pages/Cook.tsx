@@ -1,4 +1,4 @@
-import { ArrowLeft, BadgeIcon, Bookmark, CheckCircle, CheckIcon, ChefHat, RefreshCcw, ShoppingBag, Sparkles, SquareCheck, Zap, ZapIcon } from "lucide-react"
+import { ArrowLeft, BadgeIcon, Bookmark, CheckCircle, CheckIcon, ChefHat, RefreshCcw, ShoppingBag, Sparkles, SquareCheck, UtensilsCrossed, Zap, ZapIcon } from "lucide-react"
 import BodyLayout from "../layouts/BodyLayout"
 import { Link } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
@@ -98,7 +98,9 @@ const Cook = () => {
                   </p>
                 </div>
               </div>
-              <span className="text-4xl font-serif font-bold px-2">{0}</span>
+              <span className="text-4xl font-serif font-bold px-2">
+                {tab == "ready" ? foods && foods.length : <UtensilsCrossed className="w-8 h-8" />}
+              </span>
             </button>
 
             <button
@@ -117,7 +119,9 @@ const Cook = () => {
                   </p>
                 </div>
               </div>
-              <span className="text-4xl font-serif font-bold px-2">{0}</span>
+              <span className="text-4xl font-serif font-bold px-2">
+                {tab == "missing" ? foods.length : <UtensilsCrossed className="w-8 h-8" />}
+              </span>
             </button>
           </div>
 
@@ -129,14 +133,15 @@ const Cook = () => {
               }`}
           >
             <Bookmark className="w-4 h-4" />
-            <span>Saved recipes ({recipes.length})</span>
+            <span>Saved recipes ({recipes ? recipes.length : 0})</span>
           </button>
         </div>
         <div className="flex items-center justify-center w-full">
           {tab == "ready" || tab == "missing" ?
             isLoading && hasItemsSelected ? <SmallLoader /> :
               <div className="flex flex-col gap-8">
-                {foods.map((food, index) => <RecipeCard key={index} recipe={food} recipes={recipes} />)}
+                {!foods && <p className="text-xl font-semibold text-center">No Foods available</p>}
+                {foods && foods.map((food, index) => <RecipeCard key={index} recipe={food} recipes={recipes} />)}
               </div>
             :
             <div className="flex flex-col gap-8">

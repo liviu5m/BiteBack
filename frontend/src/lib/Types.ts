@@ -35,6 +35,11 @@ export type MissingIngredient = {
   importance: string;
 }
 
+export type UsedIngredient = {
+  name: string,
+  id: number
+}
+
 export type RecipeData = {
   id?: number;
   recipe_name: string;
@@ -43,7 +48,7 @@ export type RecipeData = {
   difficulty: 'Easy' | 'Medium' | 'Hard';
   cuisine_tag: string;
   hook_line: string;
-  used_ingredients: string[];
+  used_ingredients: UsedIngredient[];
   missing_ingredients: MissingIngredient[];
   preservation_tip: string;
   image_url?: string;

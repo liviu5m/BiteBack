@@ -4,15 +4,20 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { type RecipeData } from "@/lib/Types"
 import { deleteRecipeFunc, saveRecipeFunc } from '@/api/recipe';
 import { useAppContext } from '@/lib/AppProvider';
+import { markAsCookedFunc } from '@/api/item';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
+
 interface RecipeCardProps {
   recipe: RecipeData;
-  onMarkAsCooked?: () => void;
   recipes: RecipeData[]
 }
 
-export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onMarkAsCooked, recipes }) => {
+export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, recipes }) => {
   const queryClient = useQueryClient();
-  const { user } = useAppContext();
+  const { user, setCheckedItems, checkedItems } = useAppContext();
+  const navigate = useNavigate();
   const saved = recipes?.find((r) => r.recipe_name === recipe.recipe_name);
   const { mutate: saveRecipe } = useMutation({
     mutationKey: ["save-recipe", recipe.recipe_name],
@@ -38,7 +43,47 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onMarkAsCooked, 
     }
   })
 
+  const { mutate: markAsCooked } = useMutation({
+    mutationKey: ["mark-as-cooked"],
+    mutationFn: () => markAsCookedFunc(recipe.used_ingredients.map((ingredient) => String(ingredient.id))),
+    onSuccess: (data) => {
+      console.log(data);
+      toast("Recipe cooked successfully")
+      localStorage.removeItem("items")
+      queryClient.invalidateQueries({ queryKey: ["items-user"] })
+      setCheckedItems({})
+      navigate("/dashboard")
+    },
+    onError: (err) => {
+      console.log(err);
+    }
+  })
 
+  const cookFood = () => {
+    const requiredIds = recipe.used_ingredients.map((ing) => String(ing.id));
+    const checkedIds = Object.keys(checkedItems);
+
+    const setsDoNotMatch =
+      requiredIds.length !== checkedIds.length ||
+      !requiredIds.every((id) => checkedIds.includes(id));
+
+    if (setsDoNotMatch) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "Do you really want to cook this recipe? (even if you don't have all the ingredeints selected)",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, cook it!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          markAsCooked()
+          console.log("Cooking...");
+        }
+      })
+    } else markAsCooked();
+  }
 
   return (
     <div className=" flex flex-col md:flex-row max-w-3xl bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden font-sans">
@@ -84,7 +129,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onMarkAsCooked, 
             <div className="flex flex-wrap gap-2">
               {recipe.used_ingredients.map((ing, idx) => (
                 <span key={idx} className="bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full font-medium border border-gray-200">
-                  {ing}
+                  {ing.name}
                 </span>
               ))}
             </div>
@@ -130,8 +175,10 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onMarkAsCooked, 
             <Bookmark size={18} />
           </button>
           <button
-            onClick={onMarkAsCooked}
-            className="bg-[#1b4332] hover:bg-[#143225] text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all shadow-sm"
+            onClick={() => {
+              cookFood()
+            }}
+            className="cursor-pointer bg-[#1b4332] hover:bg-[#143225] text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all shadow-sm"
           >
             Mark as Cooked
           </button>

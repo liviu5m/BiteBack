@@ -1,7 +1,7 @@
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlmodel import col, select
+from sqlmodel import col, func, select
 from ai import getProductMatchingItems
 from database import SessionDep
 from models import Item, ItemCategory
@@ -78,7 +78,7 @@ def getItemByUserId(
     session: SessionDep, user: dict[Any, Any] = Depends(verifyUserTokenSession)
 ):
 
-    stmt = select(Item).where(Item.user_id == user["userId"])
+    stmt = select(Item).where(Item.user_id == user["userId"], Item.saved == False)
     items = session.exec(stmt).all()
     return items
 
@@ -101,3 +101,45 @@ def getProductByMatches(
     stmt = select(Item).where(col(Item.id).in_(ids))
     items = session.exec(stmt).all()
     return getProductMatchingItems(list(items), tab)
+
+
+@app.get("/cook")
+def markAsCooked(
+    session: SessionDep,
+    ids: list[int] = Query(default=[]),
+    user: dict[Any, Any] = Depends(verifyUserTokenSession),
+):
+
+    stmt = select(Item).where(col(Item.id).in_(ids))
+    items = session.exec(stmt).all()
+    for item in items:
+        item.saved = True
+
+    session.commit()
+    return "Items saved"
+
+
+@app.get("/saved")
+def getSavedPercentage(
+    session: SessionDep,
+    user: dict[Any, Any] = Depends(verifyUserTokenSession),
+):
+    if not user:
+        raise HTTPException(status_code=401, detail="User ID not found in session")
+
+    total_stmt = select(func.count()).where(Item.user_id == user["userId"])
+    total_items = session.exec(total_stmt).one()
+
+    if total_items == 0:
+        return 0.0
+
+    saved_stmt = (
+        select(func.count())
+        .where(Item.user_id == user["userId"])
+        .where(Item.saved == True)
+    )
+    saved_items = session.exec(saved_stmt).one()
+
+    percentage = (saved_items / total_items) * 100
+
+    return percentage

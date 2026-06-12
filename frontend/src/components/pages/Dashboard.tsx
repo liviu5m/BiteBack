@@ -5,7 +5,7 @@ import { ItemRow } from "../elements/ItemRow";
 import { ChefHat, Plus, PlusCircle, PlusIcon, Scan, ShieldAlert, ShieldCheck, Timer, X } from "lucide-react";
 import { Modal } from "../elements/Modal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { addItemFunc, getItemsByUser } from "@/api/item";
+import { addItemFunc, getItemsByUser, getPercentageSaved } from "@/api/item";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion"
 import { useAppContext } from "@/lib/AppProvider";
@@ -65,6 +65,11 @@ const Dashboard = () => {
     })
   }, [isAddItemModalOpened]);
 
+  const { data: savedPercentage } = useQuery({
+    queryKey: ["saved-percentage"],
+    queryFn: () => getPercentageSaved()
+  })
+
   return (
     <BodyLayout>
       <div className="min-h-screen w-[calc(100vw-350px)] p-6 flex justify-center items-start gap-10">
@@ -75,12 +80,12 @@ const Dashboard = () => {
             style={{
               width: "160px",
               height: "160px",
-              background: `conic-gradient(#10b981 ${60}%, #f3f4f6 ${60}% 100%)`
+              background: `conic-gradient(#10b981 ${savedPercentage}%, #f3f4f6 ${savedPercentage}% 100%)`
             }}
           >
             <div className="absolute w-[132px] h-[132px] bg-white rounded-full flex flex-col items-center justify-center select-none">
               <span className="text-3xl font-black text-emerald-900 leading-none">
-                {60}%
+                {savedPercentage}%
               </span>
               <span className="text-xs font-bold text-gray-400 tracking-wider mt-1">
                 SAVED
@@ -119,7 +124,7 @@ const Dashboard = () => {
           </div>
 
           <div className="flex flex-col gap-8 overflow-y-scroll h-full">
-
+            {items && items.length == 0 && <p className="text-xl font-semibold text-center">No Food in the Virtual Fridge</p>}
             {actionRequired.length > 0 && (
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-2 text-rose-500 font-bold text-xs uppercase tracking-wider px-1">
