@@ -1,7 +1,6 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from typing import List
 from zoneinfo import ZoneInfo
-
 from sqlalchemy import func, Column, DateTime
 from sqlmodel import Enum, Relationship, SQLModel, Field
 from enum import Enum
@@ -44,10 +43,11 @@ class Item(SQLModel, table=True):
     name: str = Field(nullable=False)
     weight: int = Field(nullable=False)
     category: ItemCategory = Field(nullable=False)
-    days: int = Field(nullable=False)
+    expiryDate: date = Field(nullable=False)
     user_id: int = Field(foreign_key="users.id", nullable=False)
     user: "User" = Relationship(back_populates="items")
     saved: bool = Field(default=False)
+    createdAt: datetime = Field(default=datetime.now(), nullable=False)
 
 
 class Recipe(SQLModel, table=True):

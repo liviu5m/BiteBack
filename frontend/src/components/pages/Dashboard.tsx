@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import { motion } from "framer-motion"
 import { useAppContext } from "@/lib/AppProvider";
 import { Link } from "react-router-dom";
+import { differenceInDays, parseISO } from "date-fns";
 const Dashboard = () => {
   const { checkedItems, setCheckedItems } = useAppContext()
   const queryClient = useQueryClient();
@@ -22,7 +23,7 @@ const Dashboard = () => {
     name: "",
     weight: '',
     category: "produce",
-    days: ''
+    expiryDate: ''
   });
   const itemsChecked = Object.values(checkedItems).filter(el => el).length
 
@@ -47,13 +48,22 @@ const Dashboard = () => {
     queryFn: () => getItemsByUser()
   })
 
-  const actionRequired = items ? items.filter((item) => Number(item.days) <= 2) : [];
-  const expiringSoon = items ? items.filter((item) => Number(item.days) >= 3 && Number(item.days) <= 5) : [];
-  const safeStorage = items ? items.filter((item) => Number(item.days) > 5) : [];
+  const actionRequired = items ? items.filter((item) => {
+    const daysTillExpiry = differenceInDays(parseISO(item.expiryDate), new Date())
+    return Number(daysTillExpiry) <= 2
+  }) : [];
+  const expiringSoon = items ? items.filter((item) => {
+    const daysTillExpiry = differenceInDays(parseISO(item.expiryDate), new Date())
+    return Number(daysTillExpiry) >= 3 && Number(daysTillExpiry) <= 5
+  }) : [];
+  const safeStorage = items ? items.filter((item) => {
+    const daysTillExpiry = differenceInDays(parseISO(item.expiryDate), new Date())
+    return Number(daysTillExpiry) >= 5
+  }) : [];
+
   useEffect(() => {
     if (itemData.weight[0] == '0' && itemData.weight.length > 1) setItemData({ ...itemData, weight: itemData.weight.slice(1) })
-    if (itemData.days[0] == '0' && itemData.days.length > 1) setItemData({ ...itemData, days: itemData.days.slice(1) })
-  }, [itemData.weight, itemData.days]);
+  }, [itemData.weight]);
 
   useEffect(() => {
     setItemData({
@@ -61,7 +71,7 @@ const Dashboard = () => {
       name: "",
       weight: '',
       category: "produce",
-      days: '',
+      expiryDate: '',
     })
   }, [isAddItemModalOpened]);
 
@@ -80,12 +90,12 @@ const Dashboard = () => {
             style={{
               width: "160px",
               height: "160px",
-              background: `conic-gradient(#10b981 ${savedPercentage}%, #f3f4f6 ${savedPercentage}% 100%)`
+              background: `conic-gradient(#10b981 ${parseInt(savedPercentage)}%, #f3f4f6 ${parseInt(savedPercentage)}% 100%)`
             }}
           >
             <div className="absolute w-[132px] h-[132px] bg-white rounded-full flex flex-col items-center justify-center select-none">
               <span className="text-3xl font-black text-emerald-900 leading-none">
-                {savedPercentage}%
+                {savedPercentage ? parseInt(savedPercentage) : 0}%
               </span>
               <span className="text-xs font-bold text-gray-400 tracking-wider mt-1">
                 SAVED
@@ -232,10 +242,10 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="w-full">
-                <label htmlFor="name" className="text-[#1E4D3B]">Days until expiry</label>
-                <input type="number" placeholder="e.g. Whole Milk" className="mt-2 w-full px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" value={itemData.days} onChange={(e) => setItemData({ ...itemData, days: e.target.value })} />
+                <label htmlFor="name" className="text-[#1E4D3B]">Expirty Date</label>
+                <input type="date" className="mt-2 w-full px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" value={itemData.expiryDate} onChange={(e) => setItemData({ ...itemData, expiryDate: e.target.value })} />
               </div>
-              <button className={`text-white flex items-center justify-center gap-4 ${itemData.name != "" && itemData.weight && itemData.days ? "bg-[#1E4D3B] cursor-pointer" : "bg-[#A5B9B1]"} rounded-2xl px-5 py-3 font-semibold text-xl`} disabled={itemData.name == "" || itemData.weight == '' || itemData.days == ''}>
+              <button className={`text-white flex items-center justify-center gap-4 ${itemData.name != "" && itemData.weight && itemData.expiryDate ? "bg-[#1E4D3B] cursor-pointer" : "bg-[#A5B9B1]"} rounded-2xl px-5 py-3 font-semibold text-xl`} disabled={itemData.name == "" || itemData.weight == '' || itemData.expiryDate == ''}>
                 <PlusIcon />
                 <span>Add to fridge</span>
               </button>

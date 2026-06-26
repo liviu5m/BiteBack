@@ -6,14 +6,14 @@ from ai import getProductMatchingItems
 from database import SessionDep
 from models import Item, ItemCategory
 from utils import verifyUserTokenSession
-
+from datetime import date, datetime
 
 app = APIRouter(prefix="/api/item", dependencies=[Depends(verifyUserTokenSession)])
 
 
 class ItemData(BaseModel):
     name: str
-    days: int
+    expiryDate: date
     category: ItemCategory
     weight: int
 
@@ -27,10 +27,10 @@ def createItem(
     print(user)
     item = Item(
         name=data.name,
-        days=data.days,
         category=data.category,
         weight=data.weight,
         user_id=user["userId"],
+        expiryDate=data.expiryDate,
     )
     session.add(item)
     session.commit()
@@ -52,7 +52,7 @@ def updateItem(
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     item.name = data.name
-    item.days = data.days
+    item.expiryDate = data.expiryDate
     item.category = data.category
     item.weight = data.weight
     session.add(item)
@@ -78,7 +78,11 @@ def getItemByUserId(
     session: SessionDep, user: dict[Any, Any] = Depends(verifyUserTokenSession)
 ):
 
-    stmt = select(Item).where(Item.user_id == user["userId"], Item.saved == False)
+    stmt = select(Item).where(
+        Item.user_id == user["userId"],
+        Item.saved == False,
+        Item.expiryDate > date.today(),
+    )
     items = session.exec(stmt).all()
     return items
 

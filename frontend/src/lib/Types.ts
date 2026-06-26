@@ -27,7 +27,7 @@ export type FridgeItem = {
   name: string;
   weight: string;
   category: ItemCategory;
-  days: string;
+  expiryDate: string;
 }
 
 export type MissingIngredient = {

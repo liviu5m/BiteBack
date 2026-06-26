@@ -1,4 +1,5 @@
 import random
+from datetime import date, timedelta  # 🌟 Add timedelta to the imports at the top
 from faker import Faker
 from sqlmodel import Session, create_engine, select
 from faker_food import FoodProvider  # 1. Import the provider
@@ -26,11 +27,13 @@ def seed_items(num_items: int = 20):
         categories = list(ItemCategory)
 
         for _ in range(num_items):
+            random_days = random.randint(1, 14)
+            generated_expiry = date.today() + timedelta(days=random_days)
             new_item = Item(
                 name=fake.ingredient().capitalize(),
                 weight=random.randint(100, 2000),
                 category=random.choice(categories),
-                days=random.randint(1, 14),
+                expiryDate=generated_expiry,
                 user_id=3,
                 saved=False,
             )

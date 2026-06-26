@@ -5,6 +5,7 @@ import { Modal } from "./Modal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteItemByid, updateItemById } from "@/api/item";
 import { toast } from "react-toastify";
+import { parseISO, differenceInDays } from 'date-fns';
 
 interface ItemRowProps {
   item: FridgeItem;
@@ -30,7 +31,7 @@ export const ItemRow = ({
     name: item.name,
     weight: item.weight,
     category: item.category,
-    days: item.days
+    expiryDate: item.expiryDate
   });
 
   const { mutate: updateItem } = useMutation({
@@ -60,6 +61,7 @@ export const ItemRow = ({
     }
   })
 
+  const daysTillExpiry = differenceInDays(parseISO(item.expiryDate), new Date())
 
   return (
     <li
@@ -113,7 +115,7 @@ export const ItemRow = ({
         </div>
       </div>
       <span className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap min-w-[70px] text-center shadow-sm ${badgeClass}`}>
-        {item.days} {item.days === 1 ? "day" : "days"} </span>
+        {daysTillExpiry} {daysTillExpiry === 1 ? "day" : "days"} </span>
       {
         editItemId != -1 && <Modal title={""} isOpen={editItemId != -1} onClose={() => setEditItemId(-1)} children={
           <div>
@@ -154,10 +156,10 @@ export const ItemRow = ({
                 </div>
               </div>
               <div className="w-full">
-                <label htmlFor="name" className="text-[#1E4D3B]">Days until expiry</label>
-                <input type="number" placeholder="e.g. Whole Milk" className="mt-2 w-full px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" value={itemData.days} onChange={(e) => setItemData({ ...itemData, days: e.target.value })} />
+                <label htmlFor="name" className="text-[#1E4D3B]">Expirty Date</label>
+                <input type="date" className="mt-2 w-full px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" value={itemData.expiryDate} onChange={(e) => setItemData({ ...itemData, expiryDate: e.target.value })} />
               </div>
-              <button className={`text-white flex items-center justify-center gap-4 ${itemData.name != "" && itemData.weight && itemData.days ? "bg-[#1E4D3B] cursor-pointer" : "bg-[#A5B9B1]"} rounded-2xl px-5 py-3 font-semibold text-xl`} disabled={itemData.name == "" || itemData.weight == '' || itemData.days == ''}>
+              <button className={`text-white flex items-center justify-center gap-4 ${itemData.name != "" && itemData.weight && itemData.expiryDate ? "bg-[#1E4D3B] cursor-pointer" : "bg-[#A5B9B1]"} rounded-2xl px-5 py-3 font-semibold text-xl`} disabled={itemData.name == "" || itemData.weight == '' || itemData.expiryDate == ''}>
                 <Edit3Icon />
                 <span>Update the fridge</span>
               </button>

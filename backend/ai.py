@@ -30,7 +30,7 @@ def getProductMatchingItems(items: list[Item], tab: str):
     inventory_lines = []
     for item in items:
         inventory_lines.append(
-            f"- #{item.id} - {item.name} (Weight: {item.weight}, Expires in: {item.days} days)"
+            f"- #{item.id} - {item.name} (Weight: {item.weight}, Expiry date : {item.expiryDate} )"
         )
     inventory_str = "\n".join(inventory_lines)
     allowed_names = ", ".join([f"'{item.name}'" for item in items])
