@@ -88,7 +88,7 @@ def getUserIdFromToken(token: str) -> Optional[int]:
 
 async def verifyUserTokenSession(request: Request):
     jwtToken = request.cookies.get("jwt")
-
+    print("CHECK ", jwtToken)
     if not jwtToken:
         raise HTTPException(status_code=401, detail="User not authenticated")
 

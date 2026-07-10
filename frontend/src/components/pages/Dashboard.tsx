@@ -54,7 +54,7 @@ const Dashboard = () => {
   }) : [];
   const expiringSoon = items ? items.filter((item) => {
     const daysTillExpiry = differenceInDays(parseISO(item.expiryDate), new Date())
-    return Number(daysTillExpiry) >= 3 && Number(daysTillExpiry) <= 5
+    return Number(daysTillExpiry) >= 3 && Number(daysTillExpiry) < 5
   }) : [];
   const safeStorage = items ? items.filter((item) => {
     const daysTillExpiry = differenceInDays(parseISO(item.expiryDate), new Date())

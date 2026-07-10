@@ -79,8 +79,8 @@ SCHEMA TYPE:
   }}
 ]
 """
-    recipes = getGoogleAIResult(content)
-    # recipes = getAIResult(content)
+    # recipes = getGoogleAIResult(content)
+    recipes = getAIResult(content)
     if not isinstance(recipes, list):
         return []
 

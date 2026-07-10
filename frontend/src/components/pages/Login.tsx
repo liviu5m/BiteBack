@@ -3,6 +3,7 @@ import { ArrowRight, Lock, Mail } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { loginUserFunc } from "../../api/user";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -17,7 +18,8 @@ const Login = () => {
       queryClient.invalidateQueries({ queryKey: ["jwt-user"] })
       navigate("/dashboard")
     },
-    onError: (err) => {
+    onError: (err: any) => {
+      toast(err.response?.data?.detail)
       console.log(err);
     },
   });
@@ -25,6 +27,11 @@ const Login = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     login();
+  };
+
+  const loginWithGoogle = () => {
+    const baseUrl = import.meta.env.VITE_API_URL
+    window.location.href = baseUrl + "/auth/google/login"
   };
 
   return (
@@ -100,7 +107,26 @@ const Login = () => {
             />
           </button>
         </form>
-
+        <div className="mt-5 relative flex items-center justify-center w-full">
+          <div className="w-full h-px bg-gray-300"></div>
+          <span className="absolute bg-white px-3 text-gray-500 text-sm">
+            or
+          </span>
+        </div>
+        <button
+          type="submit"
+          onClick={() => loginWithGoogle()}
+          className="group flex items-center justify-center gap-5 bg-white hover:bg-gray-100 text-[#333] px-6 py-4 rounded-full font-medium text-lg shadow-md transition-all duration-300 active:scale-98 mt-4 cursor-pointer w-full border border-gray-50"
+        >
+          <img src="/imgs/google.png" className="w-5 h-5 " alt="" />
+          <div className="flex items-center gap-2">
+            <span>Continue with Google</span>
+            <ArrowRight
+              size={20}
+              className="group-hover:translate-x-1 transition-transform"
+            />
+          </div>
+        </button>
         <p className="text-gray-400 text-sm mt-8 text-center">
           Don't have an account?{" "}
           <Link
@@ -111,7 +137,7 @@ const Login = () => {
           </Link>
         </p>
       </div>
-    </div>
+    </div >
   );
 };
 

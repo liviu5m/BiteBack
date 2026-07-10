@@ -10,6 +10,8 @@ interface AppContextType {
   user: User | null;
   checkedItems: Record<number, boolean>
   setCheckedItems: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
+  cookTab: string;
+  setCookTab: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -24,11 +26,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     const saved = localStorage.getItem("items");
     return saved ? JSON.parse(saved) : {};
   });
+  const [cookTab, setCookTab] = useState("ready");
   const { data: user, isPending } = useQuery({
     queryKey: ["jwt-user"],
     queryFn: () => getAuthUserJwt(),
     retry: false,
   });
+
 
   useEffect(() => {
     localStorage.setItem("items", JSON.stringify(checkedItems));
@@ -41,7 +45,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       value={{
         user,
         checkedItems,
-        setCheckedItems
+        setCheckedItems,
+        cookTab,
+        setCookTab,
       }}
     >
       {children}

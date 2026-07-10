@@ -28,8 +28,10 @@ const Sidebar = () => {
     mutationFn: () => logoutUser(),
     onSuccess: (data) => {
       console.log(data);
-      navigate("/auth/login")
-      queryClient.invalidateQueries({ queryKey: ["jwt-user"] })
+      queryClient.clear();
+      localStorage.removeItem("items")
+      window.location.reload()
+      navigate("/auth/login");
     },
     onError: (err) => {
       console.log(err);

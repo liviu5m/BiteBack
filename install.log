@@ -1,0 +1,8 @@
+[20:37:20 2026-07-08] FETCHING Version 2.44.0
+[20:37:20 2026-07-08] DOWNLOADING https://github.com/spicetify/cli/releases/download/v2.44.0/spicetify-2.44.0-linux-amd64.tar.gz
+[20:37:21 2026-07-08] EXTRACTING /home/liviu/.spicetify/spicetify.tar.gz
+[20:37:21 2026-07-08] SETTING EXECUTABLE PERMISSIONS TO /home/liviu/.spicetify/spicetify
+[20:37:21 2026-07-08] REMOVING /home/liviu/.spicetify/spicetify.tar.gz
+[20:37:21 2026-07-08] spicetify path already set in /home/liviu/.zshrc, continuing...
+[20:37:21 2026-07-08] spicetify v2.44.0 was installed successfully to /home/liviu/.spicetify
+[20:37:21 2026-07-08] Run 'spicetify --help' to get started

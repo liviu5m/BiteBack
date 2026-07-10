@@ -35,6 +35,7 @@ class User(SQLModel, table=True):
     enabled: bool = Field(default=False)
     items: List["Item"] = Relationship(back_populates="user")
     recipes: List["Recipe"] = Relationship(back_populates="user")
+    shareItems: List["ShareItem"] = Relationship(back_populates="user")
 
 
 class Item(SQLModel, table=True):
@@ -65,3 +66,14 @@ class Recipe(SQLModel, table=True):
     missing_ingredients: str = Field(nullable=False)
     preservation_tip: str = Field(nullable=False)
     image_url: str = Field(nullable=False)
+
+
+class ShareItem(SQLModel, table=True):
+    __tablename__: str = "share_items"
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="users.id", nullable=False)
+    user: User = Relationship(back_populates="shareItems")
+    name: str = Field(nullable=False)
+    expiryDate: date = Field(nullable=False)
+    weight: int = Field(nullable=False)
+    notes: str = Field(nullable=True)

@@ -1,12 +1,15 @@
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlmodel import col, func, select
 from ai import getProductMatchingItems
 from database import SessionDep
 from models import Item, ItemCategory
+from redis_client import redis_client
 from utils import verifyUserTokenSession
 from datetime import date, datetime
+import json
+import uuid
 
 app = APIRouter(prefix="/api/item", dependencies=[Depends(verifyUserTokenSession)])
 
@@ -98,13 +101,34 @@ def getItemsByIds(session: SessionDep, ids: list[int] = Query(default=[])):
 
 @app.get("/food/{tab}")
 def getProductByMatches(
-    tab: str, session: SessionDep, ids: list[int] = Query(default=[])
+    tab: str,
+    background_tasks: BackgroundTasks,
+    session: SessionDep,
+    ids: list[int] = Query(default=[]),
 ):
     if not ids:
         return []
-    stmt = select(Item).where(col(Item.id).in_(ids))
-    items = session.exec(stmt).all()
-    return getProductMatchingItems(list(items), tab)
+    job_id = str(uuid.uuid4())
+    redis_client.setex(f"job:{job_id}", 3600, json.dumps({"status": "PROCESSING"}))
+
+    def process():
+        try:
+            stmt = select(Item).where(col(Item.id).in_(ids))
+            items = session.exec(stmt).all()
+            result = getProductMatchingItems(list(items), tab)
+            print(result, tab)
+            redis_client.setex(
+                f"job:{job_id}",
+                3600,
+                json.dumps({"status": "COMPLETED", "data": result}),
+            )
+        except Exception as e:
+            redis_client.setex(
+                f"job:{job_id}", 3600, json.dumps({"status": "FAILED", "error": str(e)})
+            )
+
+    background_tasks.add_task(process)
+    return {"job_id": job_id}
 
 
 @app.get("/cook")

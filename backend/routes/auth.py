@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Response
+from dotenv.main import _load_dotenv_disabled
+from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field, field_validator
 from sentry_sdk.integrations import fastapi
 from database import SessionDep
@@ -7,8 +8,87 @@ from utils import hashPassword, generate6DigitCode, nowPlusMinutes, sendBrevoEma
 from datetime import datetime
 from sqlalchemy import select
 from utils import verifyPassword, createAccessToken
+from fastapi.responses import RedirectResponse
+from authlib.integrations.starlette_client import OAuth
+from starlette.middleware.sessions import SessionMiddleware
+from datetime import datetime, timedelta, timezone
+import secrets
+from dotenv import load_dotenv
+import os
 
 app = APIRouter(prefix="/auth")
+load_dotenv()
+oauth = OAuth()
+oauth.register(
+    name="google",
+    client_id=os.getenv("GOOGLE_CLIENT_ID"),
+    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+    client_kwargs={"scope": "openid email profile"},
+)
+
+REACT_DASHBOARD_URL = os.getenv("REACT_DASHBOARD_URL")
+
+
+@app.get("/google/login")
+async def loginGoogle(request: Request):
+    redirect_uri = "http://localhost:8000/auth/google/callback"
+    return await oauth.google.authorize_redirect(request, redirect_uri)
+
+
+@app.get("/google/callback")
+async def callback(request: Request, session: SessionDep):
+    try:
+        token = await oauth.google.authorize_access_token(request)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Google authentication failed")
+
+    user_info = token.get("userinfo")
+    if not user_info:
+        raise HTTPException(status_code=400, detail="Could not retrieve user profile")
+
+    email = user_info.get("email")
+    name = user_info.get("name")
+
+    stmt = select(User).where(User.email == email)
+    user = session.exec(stmt).scalar_one_or_none()
+
+    if not user:
+        fallback_username = email.split("@")[0] + secrets.token_hex(2)
+
+        user = User(
+            username=fallback_username,
+            email=email,
+            name=name,
+            password=hashPassword(secrets.token_urlsafe(16)),
+            enabled=True,
+            provider="google",
+            verificationCode=None,
+            verificationExpiresAt=None,
+        )
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+
+    token_jwt = createAccessToken(
+        data={
+            "userId": user.id,
+            "email": user.email,
+            "username": user.username,
+            "name": user.name,
+        }
+    )
+
+    response = RedirectResponse(url=REACT_DASHBOARD_URL)
+    response.set_cookie(
+        key="jwt",
+        value=token_jwt,
+        httponly=True,
+        # secure=True,  # Set to True if testing over production HTTPS
+        samesite="lax",
+        max_age=60 * 60 * 24,
+    )
+    return response
 
 
 class SignupData(BaseModel):
@@ -55,6 +135,7 @@ def signup(data: SignupData, session: SessionDep):
         password=hashPassword(data.password),
         verificationCode=generate6DigitCode(),
         verificationExpiresAt=nowPlusMinutes(5),
+        provider="credentials",
     )
     session.add(user)
     session.commit()
@@ -160,6 +241,12 @@ def login(data: LoginData, response: Response, session: SessionDep):
     user = session.exec(stmt).scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
+
+    if user.provider == "google":
+        raise HTTPException(
+            status_code=400, detail="This account supports only google authentication"
+        )
+
     if verifyPassword(data.password, user.password):
         jwt = createAccessToken(
             data={
@@ -173,7 +260,7 @@ def login(data: LoginData, response: Response, session: SessionDep):
             key="jwt",
             value=jwt,
             httponly=True,
-            secure=False,
+            # secure=False,
             samesite="lax",
             max_age=60 * 60 * 24,
         )
