@@ -77,3 +77,4 @@ class ShareItem(SQLModel, table=True):
     expiryDate: date = Field(nullable=False)
     weight: int = Field(nullable=False)
     notes: str = Field(nullable=True)
+    location: str = Field(nullable=False)

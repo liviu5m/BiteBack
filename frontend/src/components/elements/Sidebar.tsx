@@ -14,7 +14,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 const MENU_ITEMS = [
   { id: "fridge", label: "Fridge", icon: Home, url: "/dashboard" },
   { id: "cook", label: "Cook", icon: ChefHat, url: "/cook" },
-  { id: "plan", label: "Plan", icon: Calendar, url: "/plan" },
   { id: "share", label: "Share", icon: ShoppingBag, url: "/share" },
   { id: "chat", label: "Chat", icon: MessageCircle, url: "/chat" },
 ] as const;

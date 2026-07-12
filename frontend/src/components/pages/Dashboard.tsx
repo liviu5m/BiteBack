@@ -242,7 +242,7 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="w-full">
-                <label htmlFor="name" className="text-[#1E4D3B]">Expirty Date</label>
+                <label htmlFor="name" className="text-[#1E4D3B]">Expiry Date</label>
                 <input type="date" className="mt-2 w-full px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" value={itemData.expiryDate} onChange={(e) => setItemData({ ...itemData, expiryDate: e.target.value })} />
               </div>
               <button className={`text-white flex items-center justify-center gap-4 ${itemData.name != "" && itemData.weight && itemData.expiryDate ? "bg-[#1E4D3B] cursor-pointer" : "bg-[#A5B9B1]"} rounded-2xl px-5 py-3 font-semibold text-xl`} disabled={itemData.name == "" || itemData.weight == '' || itemData.expiryDate == ''}>

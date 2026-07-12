@@ -53,3 +53,25 @@ export type RecipeData = {
   preservation_tip: string;
   image_url?: string;
 }
+
+export type ShareItemData = {
+  name: string;
+  expiryDate: string;
+  weight: number;
+  notes?: string;
+  location: string;
+  userId: number;
+}
+
+export interface FoodItem {
+  id: string;
+  name: string;
+  expiryDate: string;
+  weight: string;
+  addressText: string;
+  location: string;
+  notes?: string;
+  claimedBy?: string | null;
+  owner_username?: string;
+  owner_id?: number;
+}

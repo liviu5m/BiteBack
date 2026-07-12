@@ -57,7 +57,7 @@ function App() {
           </BrowserRouter>{" "}
           <ToastContainer />{" "}
         </AppProvider>
-      </QueryClientProvider >
+      </QueryClientProvider>
     </>
   );
 }
