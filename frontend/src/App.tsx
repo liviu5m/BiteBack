@@ -12,6 +12,7 @@ import AuthRequiredRoute from "./components/middlewares/AuthRequiredRoute";
 import Dashboard from "./components/pages/Dashboard";
 import Cook from "./components/pages/Cook";
 import Share from "./components/pages/Share";
+import Chat from "./components/pages/Chat";
 
 function App() {
   const queryClient = new QueryClient({
@@ -49,6 +50,7 @@ function App() {
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/cook" element={<Cook />} />
                       <Route path="/share" element={<Share />} />
+                      <Route path="/chat" element={<Chat />} />
                     </Routes>
                   </AuthRequiredRoute>
                 }
@@ -57,7 +59,7 @@ function App() {
           </BrowserRouter>{" "}
           <ToastContainer />{" "}
         </AppProvider>
-      </QueryClientProvider>
+      </QueryClientProvider >
     </>
   );
 }

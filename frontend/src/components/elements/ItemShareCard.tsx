@@ -1,7 +1,11 @@
-import type { FoodItem } from "@/lib/Types";
+import { createProductRequestFunc } from "@/api/productRequest";
+import { useAppContext } from "@/lib/AppProvider";
+import type { FoodItem, ProductRequestData } from "@/lib/Types";
 import { fetchReadableAddress } from "@/lib/utils";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Calendar, Check, MapPin, Scale, User as UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 const calculateHaversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
   const R = 6371;
@@ -19,6 +23,7 @@ const calculateHaversineDistance = (lat1: number, lon1: number, lat2: number, lo
 
 const ItemShareCard = ({ item, coordinates }: { item: FoodItem, coordinates: { lat: number, lng: number } }) => {
   const [address, setAddress] = useState<string>('Nearby');
+  const { user } = useAppContext();
   let itemLat = 0;
   let itemLng = 0;
   try {
@@ -36,9 +41,24 @@ const ItemShareCard = ({ item, coordinates }: { item: FoodItem, coordinates: { l
     : 0;
 
   const isClaimed = !!item.claimedBy;
+  const queryClient = useQueryClient();
+
+  const { mutate: createProductRequest } = useMutation({
+    mutationKey: ['create-product-request'],
+    mutationFn: (data: ProductRequestData) => createProductRequestFunc(data.itemId, data.userId),
+    onSuccess: async (data) => {
+      console.log(data);
+      toast("Request sent successfully")
+      await queryClient.invalidateQueries({ queryKey: ["share-items-filter"] });
+    },
+    onError: (err) => {
+      console.log(err);
+      toast("Error sending request")
+    }
+  })
 
   const handleClaimItem = (id: string) => {
-    console.log(id);
+    createProductRequest({ userId: user.id, itemId: Number(id) });
   };
 
   useEffect(() => {

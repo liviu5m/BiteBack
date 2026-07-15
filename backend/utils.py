@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from fastapi import HTTPException, Request
+from fastapi import HTTPException, Request, WebSocket
 from passlib.context import CryptContext
 import random
 from datetime import datetime, timedelta, timezone
@@ -88,10 +88,19 @@ def getUserIdFromToken(token: str) -> Optional[int]:
 
 async def verifyUserTokenSession(request: Request):
     jwtToken = request.cookies.get("jwt")
-    print("CHECK ", jwtToken)
     if not jwtToken:
         raise HTTPException(status_code=401, detail="User not authenticated")
 
     user = decodeToken(jwtToken)
 
+    return user
+
+
+async def verify_websocket_token(websocket: WebSocket):
+    jwtToken = websocket.cookies.get("jwt")
+
+    if not jwtToken:
+        raise HTTPException(status_code=401, detail="User not authenticated")
+
+    user = decodeToken(jwtToken)
     return user

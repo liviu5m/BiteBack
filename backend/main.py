@@ -5,13 +5,15 @@ import os
 
 from starlette.middleware.sessions import SessionMiddleware
 from database import init_db
-from models import User, Item, Recipe, ShareItem
+from models import User, Item, Recipe, ShareItem, ChatRoom, Message, ProductRequest
 from routes.auth import app as authRouter
 from routes.user import app as userRouter
 from routes.item import app as itemRouter
 from routes.recipe import app as recipeRouter
 from routes.job import app as jobRouter
 from routes.share_item import app as shareItemRouter
+from routes.chat_room import app as chatRoomRouter
+from routes.product_request import app as productRequestRouter
 
 app = FastAPI()
 load_dotenv()
@@ -34,6 +36,8 @@ app.include_router(itemRouter)
 app.include_router(recipeRouter)
 app.include_router(jobRouter)
 app.include_router(shareItemRouter)
+app.include_router(chatRoomRouter)
+app.include_router(productRequestRouter)
 
 
 @app.get("/")

@@ -75,3 +75,17 @@ export interface FoodItem {
   owner_username?: string;
   owner_id?: number;
 }
+
+export type ProductRequestData = {
+  userId: number;
+  itemId: number;
+}
+
+export type ChatRoom = {
+  id: number;
+  user_one_id: number;
+  user_two_id: number;
+  user_one_username: string;
+  user_two_username: string;
+}
+

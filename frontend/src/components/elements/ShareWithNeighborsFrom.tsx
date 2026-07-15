@@ -116,10 +116,10 @@ export default function ShareWithNeighborsForm({ onClose }: { onClose: () => voi
   const { mutate: addShareItem } = useMutation({
     mutationKey: ['add-share-item'],
     mutationFn: (data: ShareItemData) => addShareItemFunc(data),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log(data);
       toast("Item added successfully")
-      queryClient.invalidateQueries({ queryKey: ["share-items-filter"] })
+      await queryClient.invalidateQueries({ queryKey: ["share-items-filter"] });
       onClose()
     },
     onError: (err) => {

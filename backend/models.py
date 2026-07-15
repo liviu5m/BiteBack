@@ -16,7 +16,7 @@ class ItemCategory(str, Enum):
 
 
 class RecipeDifficulty(str, Enum):
-    EASY = ("Easy",)
+    EASY = "Easy"
     MEDIUM = "Medium"
     HARD = "Hard"
 
@@ -31,7 +31,7 @@ class User(SQLModel, table=True):
     provider: str = Field(default="credentials")
     verificationCode: str = Field(nullable=True)
     verificationExpiresAt: datetime = Field(nullable=True)
-    createdAt: datetime = Field(default=datetime.now(), nullable=False)
+    createdAt: datetime = Field(default=datetime.now, nullable=False)
     enabled: bool = Field(default=False)
     items: List["Item"] = Relationship(back_populates="user")
     recipes: List["Recipe"] = Relationship(back_populates="user")
@@ -78,3 +78,49 @@ class ShareItem(SQLModel, table=True):
     weight: int = Field(nullable=False)
     notes: str = Field(nullable=True)
     location: str = Field(nullable=False)
+
+
+class RequestStatus(str, Enum):
+    PENDING = "pending"  # Request initiated by a buyer
+    ACCEPTED = "accepted"  # Owner approved, waiting for pickup
+    REJECTED = "rejected"  # Owner declined the request
+    COMPLETED = "completed"  # Handover confirmed, item taken
+    CANCELLED = "cancelled"  # Cancelled by either party
+
+
+class ProductRequest(SQLModel, table=True):
+    __tablename__ = "product_requests"
+    id: int | None = Field(default=None, primary_key=True)
+    share_item_id: int = Field(
+        foreign_key="share_items.id", nullable=False, ondelete="CASCADE"
+    )
+    requester_id: int = Field(
+        foreign_key="users.id", nullable=False, ondelete="CASCADE"
+    )
+    status: RequestStatus = Field(default=RequestStatus.PENDING, nullable=False)
+    createdAt: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+
+
+class ChatRoom(SQLModel, table=True):
+    __tablename__ = "chat_rooms"
+    id: int | None = Field(default=None, primary_key=True)
+    user_one_id: int = Field(foreign_key="users.id", nullable=False)
+    user_two_id: int = Field(foreign_key="users.id", nullable=False)
+    createdAt: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    messages: List["Message"] = Relationship(back_populates="chat_room")
+    user_one: "User" = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[ChatRoom.user_one_id]"}
+    )
+    user_two: "User" = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[ChatRoom.user_two_id]"}
+    )
+
+
+class Message(SQLModel, table=True):
+    __tablename__ = "messages"
+    id: int | None = Field(default=None, primary_key=True)
+    chat_room_id: int = Field(foreign_key="chat_rooms.id", nullable=False)
+    sender_id: int = Field(foreign_key="users.id", nullable=False)
+    text: str = Field(nullable=False)
+    createdAt: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    chat_room: ChatRoom = Relationship(back_populates="messages")
