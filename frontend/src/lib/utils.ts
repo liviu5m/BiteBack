@@ -5,11 +5,34 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const fetchReadableAddress = async (lat: number, lng: number, setReadableAddress: React.Dispatch<React.SetStateAction<string>>) => {
+const addressCache: Record<string, string> = {};
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export const fetchReadableAddress = async (
+  lat: number,
+  lng: number,
+  setReadableAddress: React.Dispatch<React.SetStateAction<string>>,
+  index: number = 0) => {
+  const cacheKey = `${lat},${lng}`;
+
+  if (addressCache[cacheKey]) {
+    setReadableAddress(addressCache[cacheKey]);
+    return;
+  }
+
+  if (index > 0) {
+    await delay(index * 1500);
+  }
 
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+      {
+        headers: {
+          "User-Agent": "BiteBackFoodSharingApp/1.0",
+        },
+      }
     );
     const data = await response.json();
 
@@ -25,11 +48,17 @@ export const fetchReadableAddress = async (lat: number, lng: number, setReadable
 
       const cityPart = addressParts.city || addressParts.town || addressParts.state || "";
 
-      setReadableAddress(cityPart ? `${mainLocation}, ${cityPart}` : mainLocation);
+      const formattedAddress = cityPart ? `${mainLocation}, ${cityPart}` : mainLocation;
+
+      addressCache[cacheKey] = formattedAddress;
+      setReadableAddress(formattedAddress);
     } else {
-      setReadableAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+      const fallback = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+      setReadableAddress(fallback);
     }
-  } catch {
-    setReadableAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+  } catch (error) {
+    console.error("Geocoding failed, falling back to coordinates", error);
+    const fallback = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    setReadableAddress(fallback);
   }
 };

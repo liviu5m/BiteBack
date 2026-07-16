@@ -2,7 +2,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlmodel import select
+from sqlmodel import and_, select
 
 from database import SessionDep
 from models import ChatRoom, ProductRequest, RequestStatus, ShareItem
@@ -17,6 +17,7 @@ app = APIRouter(
 class ProductRequestData(BaseModel):
     user_id: int
     item_id: int
+    owner_id: int
 
 
 @app.post("/")
@@ -25,7 +26,7 @@ def createProductRequest(
     session: SessionDep,
     user: dict[Any, Any] = Depends(verifyUserTokenSession),
 ):
-    checkChatRoom(data.user_id, session, user)
+    checkChatRoom(data.owner_id, session, user)
     item = session.get(ShareItem, data.item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Share item not found")
@@ -39,9 +40,29 @@ def createProductRequest(
         share_item_id=data.item_id,
         requester_id=user["userId"],
         status=RequestStatus.PENDING,
+        owner_id=data.owner_id,
     )
     session.add(new_request)
     session.commit()
     session.refresh(new_request)
 
     return new_request
+
+
+@app.get(path="/owner/{user_id}")
+def getProductRequestsByOwnerId(
+    requester_id: int,
+    user_id: int,
+    session: SessionDep,
+    user: dict[Any, Any] = Depends(verifyUserTokenSession),
+):
+
+    statement = select(ProductRequest).where(
+        and_(
+            ProductRequest.owner_id == user_id,
+            ProductRequest.requester_id == requester_id,
+        )
+    )
+
+    requests = session.exec(statement).all()
+    return requests

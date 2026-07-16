@@ -79,6 +79,7 @@ export interface FoodItem {
 export type ProductRequestData = {
   userId: number;
   itemId: number;
+  ownerId: number;
 }
 
 export type ChatRoom = {
@@ -89,3 +90,16 @@ export type ChatRoom = {
   user_two_username: string;
 }
 
+export type ProductRequestDetails = {
+  id: number;
+  share_item_id: number;
+  requester_id: number;
+  owner_id: number;
+  status: 'pending' | 'accepted' | 'completed';
+  createdAt: string;
+}
+
+export type RequestedItemWithStatus = {
+  share_item: FoodItem;
+  request: ProductRequestDetails;
+}

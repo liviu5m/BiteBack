@@ -1,20 +1,21 @@
 import { fetchUserRooms, fetchMessageHistory, requestProduct } from "@/api/chatRoom";
 import { useAppContext } from "@/lib/AppProvider";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import BodyLayout from "../layouts/BodyLayout";
+import { getProductRequestsByOwnerIdFunc, updateProductRequestFunc } from "@/api/productRequest";
+import ProductRequestsCard from "@/components/elements/ProductRequestsCard";
+import { toast } from "react-toastify";
 
 export default function ChatContainer() {
   const { user } = useAppContext();
   const queryClient = useQueryClient();
 
-  // State to track the currently selected active chat room object
   const [activeChat, setActiveChat] = useState(null);
   const [typedMessage, setTypedMessage] = useState("");
 
   const socketRef = useRef(null);
 
-  // 1. Fetch all chat rooms
   const { data: chats = [], isLoading: loadingRooms } = useQuery({
     queryKey: ["chat-rooms", user?.id],
     queryFn: () => fetchUserRooms(user.id),
@@ -22,7 +23,6 @@ export default function ChatContainer() {
     enabled: !!user?.id,
   });
 
-  // 2. Fetch messages for the currently selected active chat
   const { data: messages = [], isLoading: loadingMessages } = useQuery({
     queryKey: ["messages", activeChat?.id],
     queryFn: () => fetchMessageHistory(activeChat.id),
@@ -30,14 +30,43 @@ export default function ChatContainer() {
     staleTime: 1000 * 60 * 5,
   });
 
-  // Default select the first chat room once the list loads
+  const { data: productRequests = [], isLoading: isProductRequestsLoading } = useQuery({
+    queryKey: ["product-requests", activeChat?.id],
+    queryFn: () =>
+      getProductRequestsByOwnerIdFunc(
+        activeChat?.user_one_id === user?.id
+          ? activeChat?.user_two_id
+          : activeChat?.user_one_id,
+        user?.id
+      ),
+
+    enabled: !!activeChat?.id && !!user?.id,
+  });
+  console.log(activeChat);
+
+  console.log(productRequests);
+
+  const { mutate: updateRequestStatus } = useMutation({
+    mutationKey: ['update-product-request'],
+    mutationFn: (data: { id: number, status: string }) => updateProductRequestFunc(data.id, data.status),
+    onSuccess: async (data) => {
+      console.log(data);
+      toast("Request status updated successfully")
+      await queryClient.invalidateQueries({ queryKey: ["product-requests", activeChat?.id] });
+    },
+    onError: (err) => {
+      console.log(err);
+      toast("Error updating request status")
+    }
+  })
+
+
   useEffect(() => {
     if (chats && chats.length > 0 && !activeChat) {
       setActiveChat(chats[0]);
     }
   }, [chats, activeChat]);
 
-  // 3. Real-time sync via WebSocket
   useEffect(() => {
     if (!activeChat?.id || !user?.id) return;
 
@@ -103,7 +132,6 @@ export default function ChatContainer() {
       const result = await requestProduct({ itemId, currentUserId: user.id });
       await queryClient.invalidateQueries({ queryKey: ["chat-rooms", user.id] });
 
-      // Look for the newly generated chat room and set it active
       const updatedRooms = queryClient.getQueryData(["chat-rooms", user.id]) || [];
       const targetRoom = updatedRooms.find((r) => r.id === result.chat_room_id);
       if (targetRoom) {
@@ -161,7 +189,6 @@ export default function ChatContainer() {
           </div>
         </section>
 
-        {/* CHAT WINDOW */}
         <section className="flex-1 flex flex-col bg-[#F9FAFA]">
           {activeChat ? (
             <>
@@ -181,8 +208,7 @@ export default function ChatContainer() {
                 </svg>
                 Connection Secure. Coordinate your pickup safely.
               </div>
-
-              {/* MESSAGE THREAD */}
+              <ProductRequestsCard productRequests={productRequests} currentUserId={user?.id} onUpdateStatus={updateRequestStatus} />
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {loadingMessages ? (
                   <p className="text-center text-xs text-gray-400">Loading messages...</p>

@@ -1,10 +1,10 @@
 from datetime import date
 from typing import Any, Sequence, cast
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlmodel import col, select
 from database import SessionDep
-from models import ShareItem, User
+from models import ProductRequest, ShareItem, User
 from utils import verifyUserTokenSession
 from typing import Sequence, Any
 from sqlmodel import select, func, cast, Float
@@ -78,6 +78,8 @@ def getShareItems(
     bounded_calculation = func.least(1.0, func.greatest(-1.0, inner_cos_calculation))
 
     distance_formula = 6371 * func.acos(bounded_calculation)
+    today = date.today()
+
     shareItemsStmt = (
         select(
             ShareItem,
@@ -85,9 +87,18 @@ def getShareItems(
             col(User.username).label("owner_username"),
         )
         .join(User, onclause=col(ShareItem.user_id) == col(User.id))
-        .where(ShareItem.user_id != user["userId"], distance_formula <= maxDistanceKm)
+        .join(
+            ProductRequest,
+            onclause=col(ShareItem.id) == col(ProductRequest.share_item_id),
+            isouter=True,
+        )
+        .where(
+            ShareItem.user_id != user["userId"],
+            distance_formula <= maxDistanceKm,
+            col(ShareItem.expiryDate) >= today,
+            col(ProductRequest.id) == None,
+        )
     )
-
     if searchTerm.strip():
         search_pattern = f"%{searchTerm.strip()}%"
         shareItemsStmt = shareItemsStmt.where(
@@ -113,3 +124,82 @@ def getShareItems(
             )
         )
     return formatted_items
+
+
+@app.get("/user", response_model=list[ShareItem])
+def get_owner_share_items(
+    session: SessionDep,
+    user: dict[Any, Any] = Depends(verifyUserTokenSession),
+):
+    statement = select(ShareItem).where(ShareItem.user_id == user["userId"])
+    items = session.exec(statement).all()
+    return items
+
+
+class ShareItemWithRequest(BaseModel):
+    share_item: ShareItem
+    request: ProductRequest
+
+
+@app.get("/requested", response_model=list[ShareItemWithRequest])
+def get_requested_share_items(
+    session: SessionDep, user: dict[Any, Any] = Depends(verifyUserTokenSession)
+):
+    statement = (
+        select(ShareItem, ProductRequest)
+        .join(
+            ProductRequest,
+            onclause=col(ShareItem.id) == col(ProductRequest.share_item_id),
+        )
+        .where(col(ProductRequest.requester_id) == user["userId"])
+        .distinct()
+    )
+
+    items = session.exec(statement).all()
+    return [ShareItemWithRequest(share_item=item, request=req) for item, req in items]
+
+
+@app.patch("/{item_id}", response_model=ShareItem)
+def update_share_item(
+    item_id: int,
+    item_update: dict[str, Any],
+    session: SessionDep,
+    user: dict[Any, Any] = Depends(verifyUserTokenSession),
+):
+    db_item = session.get(ShareItem, item_id)
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Share item not found")
+
+    if db_item.user_id != user["userId"]:
+        raise HTTPException(
+            status_code=403, detail="You do not have permission to edit this item"
+        )
+
+    for key, value in item_update.items():
+        if hasattr(db_item, key):
+            setattr(db_item, key, value)
+
+    session.add(db_item)
+    session.commit()
+    session.refresh(db_item)
+    return db_item
+
+
+@app.delete("/{item_id}", status_code=status.HTTP_200_OK)
+def delete_share_item(
+    item_id: int,
+    session: SessionDep,
+    user: dict[Any, Any] = Depends(verifyUserTokenSession),
+):
+    db_item = session.get(ShareItem, item_id)
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Share item not found")
+
+    if db_item.user_id != user["userId"]:
+        raise HTTPException(
+            status_code=403, detail="You do not have permission to delete this item"
+        )
+
+    session.delete(db_item)
+    session.commit()
+    return {"message": "Item deleted successfully", "id": item_id}

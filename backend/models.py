@@ -83,9 +83,7 @@ class ShareItem(SQLModel, table=True):
 class RequestStatus(str, Enum):
     PENDING = "pending"  # Request initiated by a buyer
     ACCEPTED = "accepted"  # Owner approved, waiting for pickup
-    REJECTED = "rejected"  # Owner declined the request
     COMPLETED = "completed"  # Handover confirmed, item taken
-    CANCELLED = "cancelled"  # Cancelled by either party
 
 
 class ProductRequest(SQLModel, table=True):
@@ -97,6 +95,7 @@ class ProductRequest(SQLModel, table=True):
     requester_id: int = Field(
         foreign_key="users.id", nullable=False, ondelete="CASCADE"
     )
+    owner_id: int = Field(foreign_key="users.id", nullable=False, ondelete="CASCADE")
     status: RequestStatus = Field(default=RequestStatus.PENDING, nullable=False)
     createdAt: datetime = Field(default_factory=datetime.utcnow, nullable=False)
 

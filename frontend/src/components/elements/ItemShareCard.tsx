@@ -3,9 +3,10 @@ import { useAppContext } from "@/lib/AppProvider";
 import type { FoodItem, ProductRequestData } from "@/lib/Types";
 import { fetchReadableAddress } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Calendar, Check, MapPin, Scale, User as UserIcon } from "lucide-react";
+import { Calendar, Check, MapPin, Pencil, Scale, Trash2, User as UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const calculateHaversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
   const R = 6371;
@@ -20,8 +21,23 @@ const calculateHaversineDistance = (lat1: number, lon1: number, lat2: number, lo
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
+interface ItemShareCardProps {
+  item: FoodItem;
+  index?: number;
+  coordinates: { lat: number; lng: number } | null;
+  isOwner?: boolean;
+  onEdit?: (itemToEdit: FoodItem) => void;
+  onDelete?: (id: number) => void;
+}
 
-const ItemShareCard = ({ item, coordinates }: { item: FoodItem, coordinates: { lat: number, lng: number } }) => {
+export default function ItemShareCard({
+  item,
+  index,
+  coordinates,
+  isOwner = false,
+  onEdit,
+  onDelete
+}: ItemShareCardProps) {
   const [address, setAddress] = useState<string>('Nearby');
   const { user } = useAppContext();
   let itemLat = 0;
@@ -45,7 +61,7 @@ const ItemShareCard = ({ item, coordinates }: { item: FoodItem, coordinates: { l
 
   const { mutate: createProductRequest } = useMutation({
     mutationKey: ['create-product-request'],
-    mutationFn: (data: ProductRequestData) => createProductRequestFunc(data.itemId, data.userId),
+    mutationFn: (data: ProductRequestData) => createProductRequestFunc(data.itemId, data.userId, data.ownerId),
     onSuccess: async (data) => {
       console.log(data);
       toast("Request sent successfully")
@@ -58,7 +74,7 @@ const ItemShareCard = ({ item, coordinates }: { item: FoodItem, coordinates: { l
   })
 
   const handleClaimItem = (id: string) => {
-    createProductRequest({ userId: user.id, itemId: Number(id) });
+    createProductRequest({ userId: user.id, itemId: Number(id), ownerId: item.owner_id });
   };
 
   useEffect(() => {
@@ -109,26 +125,58 @@ const ItemShareCard = ({ item, coordinates }: { item: FoodItem, coordinates: { l
           </div>
         </div>
       </div>
-
-      <button
-        type="button"
-        onClick={() => handleClaimItem(item.id)}
-        className={`w-full py-2.5 px-4 rounded-lg font-semibold text-xs tracking-wide flex items-center justify-center gap-1.5 transition-all cursor-pointer ${isClaimed
-          ? 'bg-emerald-800 hover:bg-emerald-900 text-white shadow-sm'
-          : 'bg-slate-900 hover:bg-slate-800 text-white shadow-sm'
-          }`}
-      >
-        {isClaimed ? (
-          <>
-            <Check className="h-3.5 w-3.5 stroke-[3]" />
-            Claimed! Click to cancel
-          </>
-        ) : (
-          'Claim listing'
-        )}
-      </button>
-    </div>
+      {isOwner ? (
+        <div className="border-t border-slate-100 bg-slate-50/50 px-4 py-3 flex gap-2">
+          <button
+            onClick={() => onEdit && onEdit(item)}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer"
+          >
+            <Pencil className="h-3.5 w-3.5 text-slate-500" />
+            Edit
+          </button>
+          <button
+            onClick={() => {
+              Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#be123c",
+                cancelButtonColor: "#64748b",
+                confirmButtonText: "Yes, delete it!",
+                cancelButtonText: "Cancel",
+                background: "#ffffff",
+                customClass: {
+                  popup: "rounded-2xl border border-slate-100 font-sans",
+                  title: "text-slate-800 font-bold text-lg",
+                  htmlContainer: "text-slate-500 text-sm",
+                  confirmButton: "rounded-lg text-sm font-semibold px-4 py-2 cursor-pointer",
+                  cancelButton: "rounded-lg text-sm font-semibold px-4 py-2 cursor-pointer"
+                }
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  onDelete && onDelete(Number(item.id));
+                }
+              });
+            }}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 border border-rose-200 bg-rose-50/30 hover:bg-rose-50 text-rose-700 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+          >
+            <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+            Delete
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => handleClaimItem(item.id)}
+          className={`w-full py-2.5 px-4 rounded-lg font-semibold text-xs tracking-wide flex items-center justify-center gap-1.5 transition-all cursor-pointer bg-slate-900 hover:bg-slate-800 text-white shadow-sm'
+              }`}
+        >
+          Claim listing
+        </button>
+      )
+      }
+    </div >
   );
 };
 
-export default ItemShareCard;

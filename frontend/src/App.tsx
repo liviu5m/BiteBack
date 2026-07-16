@@ -31,7 +31,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route
-                path="/auth/*"
+                path="/aApp.App.uth/*"
                 element={
                   <NonAuthRequiredRoute>
                     <Routes>
