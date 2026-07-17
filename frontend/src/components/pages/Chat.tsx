@@ -1,6 +1,6 @@
-import { fetchUserRooms, fetchMessageHistory, requestProduct } from "@/api/chatRoom";
+import { fetchUserRooms, fetchMessageHistory, requestProduct, markRoomAsRead } from "@/api/chatRoom";
 import { useAppContext } from "@/lib/AppProvider";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import BodyLayout from "../layouts/BodyLayout";
 import { getProductRequestsByOwnerIdFunc, updateProductRequestFunc } from "@/api/productRequest";
@@ -22,13 +22,30 @@ export default function ChatContainer() {
     staleTime: 1000 * 60 * 15,
     enabled: !!user?.id,
   });
-
-  const { data: messages = [], isLoading: loadingMessages } = useQuery({
+  const containerRef = useRef(null);
+  const {
+    data: infiniteMessagesData,
+    fetchPreviousPage: fetchOlderMessages,
+    hasPreviousPage: hasOlderMessages,
+    isFetchingPreviousPage: loadingOlderMessages,
+    isLoading: loadingMessages,
+  } = useInfiniteQuery({
     queryKey: ["messages", activeChat?.id],
-    queryFn: () => fetchMessageHistory(activeChat.id),
+    queryFn: ({ pageParam = 0 }) => fetchMessageHistory(activeChat.id, pageParam),
+    initialPageParam: 0,
+
+    getPreviousPageParam: (firstPage, allPages) => {
+      if (firstPage && firstPage.length < 10) return undefined;
+
+      const currentOffset = allPages.reduce((total, page) => total + page.length, 0);
+      return currentOffset;
+    },
+    getNextPageParam: () => undefined,
     enabled: !!activeChat?.id,
     staleTime: 1000 * 60 * 5,
   });
+
+  const messages = infiniteMessagesData ? infiniteMessagesData.pages.flat() : [];
 
   const { data: productRequests = [], isLoading: isProductRequestsLoading } = useQuery({
     queryKey: ["product-requests", activeChat?.id],
@@ -42,9 +59,6 @@ export default function ChatContainer() {
 
     enabled: !!activeChat?.id && !!user?.id,
   });
-  console.log(activeChat);
-
-  console.log(productRequests);
 
   const { mutate: updateRequestStatus } = useMutation({
     mutationKey: ['update-product-request'],
@@ -52,6 +66,14 @@ export default function ChatContainer() {
     onSuccess: async (data) => {
       console.log(data);
       toast("Request status updated successfully")
+
+      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+        socketRef.current.send(
+          JSON.stringify({
+            action: "update_status",
+          })
+        );
+      }
       await queryClient.invalidateQueries({ queryKey: ["product-requests", activeChat?.id] });
     },
     onError: (err) => {
@@ -77,17 +99,27 @@ export default function ChatContainer() {
 
     ws.onmessage = (event) => {
       const payload = JSON.parse(event.data);
+      console.log(payload);
 
       if (payload.type === "status_update") {
         queryClient.invalidateQueries({ queryKey: ["chat-rooms", user.id] });
+        queryClient.invalidateQueries({ queryKey: ["product-requests", activeChat?.id] });
       } else {
-        // Direct mutation of React Query's message cache for real-time appending
-        // queryClient.setQueryData(["messages", activeChat.id], (oldMessages = []) => {
-        //   if (oldMessages.some((m) => m.id === payload.id)) return oldMessages;
-        //   return [...oldMessages, payload];
-        // });
 
-        // Pull updated preview messages on the sidebar list
+        queryClient.setQueryData(["messages", activeChat.id], (oldData) => {
+          if (!oldData) return oldData;
+
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page, index) => {
+              if (index === oldData.pages.length - 1) {
+                if (page.some((m) => m.id === payload.id)) return page;
+                return [...page, payload];
+              }
+              return page;
+            }),
+          };
+        });
         queryClient.invalidateQueries({ queryKey: ["chat-rooms", user.id] });
       }
     };
@@ -99,10 +131,25 @@ export default function ChatContainer() {
     };
   }, [activeChat?.id, user?.id, queryClient]);
 
-  // 4. Send Message Handler
+  const handleScroll = (e) => {
+    const { scrollTop } = e.currentTarget;
+
+    if (scrollTop < 15 && hasOlderMessages && !loadingOlderMessages) {
+      const previousScrollHeight = e.currentTarget.scrollHeight;
+
+      fetchOlderMessages().then(() => {
+        if (containerRef.current) {
+          const newScrollHeight = containerRef.current.scrollHeight;
+          containerRef.current.scrollTop = newScrollHeight - previousScrollHeight;
+        }
+      });
+    }
+  };
+
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!typedMessage.trim() || !socketRef.current) return;
+    console.log(typedMessage);
 
     socketRef.current.send(
       JSON.stringify({
@@ -114,33 +161,41 @@ export default function ChatContainer() {
     setTypedMessage("");
   };
 
-  // 5. Confirm handover state change
-  const handleConfirmHandover = () => {
-    if (socketRef.current) {
-      socketRef.current.send(
-        JSON.stringify({
-          action: "confirm_handover",
-        })
-      );
+  const { mutate: clearUnreads } = useMutation({
+    mutationFn: (roomId: number) => markRoomAsRead(roomId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["messages", activeChat?.id] });
+      queryClient.invalidateQueries({ queryKey: ["chat-rooms", user?.id] });
+    },
+    onError: (err) => {
+      console.log(err);
     }
-  };
+  });
 
-  // 6. Manual action to request a product
-  const handleRequestItem = async (itemId) => {
-    if (!user?.id) return;
-    try {
-      const result = await requestProduct({ itemId, currentUserId: user.id });
-      await queryClient.invalidateQueries({ queryKey: ["chat-rooms", user.id] });
-
-      const updatedRooms = queryClient.getQueryData(["chat-rooms", user.id]) || [];
-      const targetRoom = updatedRooms.find((r) => r.id === result.chat_room_id);
-      if (targetRoom) {
-        setActiveChat(targetRoom);
-      }
-    } catch (err) {
-      console.error("Failed to request product:", err);
+  useEffect(() => {
+    if (activeChat?.id) {
+      clearUnreads(activeChat.id);
     }
-  };
+  }, [activeChat?.id]);
+
+  const hasScrolledToBottom = useRef(false);
+
+  useEffect(() => {
+    hasScrolledToBottom.current = false;
+  }, [activeChat?.id]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+
+    if (container && activeChat?.id && !loadingMessages && messages.length > 0) {
+      if (hasScrolledToBottom.current) return;
+
+      setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+        hasScrolledToBottom.current = true;
+      }, 50);
+    }
+  }, [activeChat?.id, loadingMessages, messages.length]);
 
   if (loadingRooms) {
     return (
@@ -154,7 +209,6 @@ export default function ChatContainer() {
     <BodyLayout>
       <div className="flex w-[calc(100vw-350px)] h-screen bg-white border border-gray-100 overflow-hidden shadow-sm">
 
-        {/* SIDEBAR */}
         <section className="w-80 border-r border-gray-100 flex flex-col shrink-0">
           <div className="p-5 border-b border-gray-100">
             <h1 className="text-xl font-bold text-gray-900">Inbox</h1>
@@ -162,30 +216,48 @@ export default function ChatContainer() {
           </div>
 
           <div className="flex-1 overflow-y-auto divide-y divide-gray-50">
-            {chats.map((chat) => (
-              <button
-                key={chat.id}
-                onClick={() => setActiveChat(chat)}
-                className={`w-full p-4 flex gap-3 text-left transition-colors hover:bg-gray-50/70 ${activeChat?.id === chat.id ? "bg-[#F0F5F2]" : ""
-                  }`}
-              >
-                <div className="w-11 h-11 rounded-full bg-[#D1E5DC] text-[#0A4C38] flex items-center justify-center font-bold text-sm shrink-0">
-                  {chat.user_one_id === user?.id ? "O" : "R"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-gray-900 truncate">
-                      {chat.user_one_username === user?.username
-                        ? chat.user_two_username
-                        : chat.user_one_username}
-                    </span>
+            {chats.map((chat) => {
+              const hasUnread = chat.unread_count > 0;
+
+              return (
+                <button
+                  key={chat.id}
+                  onClick={() => setActiveChat(chat)}
+                  className={`w-full p-4 flex gap-3 cursor-pointer text-left transition-colors hover:bg-gray-50/70 ${activeChat?.id === chat.id ? "bg-[#F0F5F2]" : ""
+                    }`}
+                >
+                  <div className="w-11 h-11 rounded-full bg-[#D1E5DC] text-[#0A4C38] flex items-center justify-center font-bold text-sm shrink-0 relative">
+                    {chat.user_one_id === user?.id ? "O" : "R"}
+
+                    {/* Subtle dot on the avatar ring if there are unreads */}
+                    {hasUnread && (
+                      <span className="absolute -top-0.5 -right-0.5 block h-3 w-3 rounded-full bg-rose-500 ring-2 ring-white" />
+                    )}
                   </div>
-                  <p className="text-xs text-[#0A4C38] font-medium truncate mt-0.5">
-                    Click to view chat
-                  </p>
-                </div>
-              </button>
-            ))}
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`text-gray-900 truncate ${hasUnread ? "font-bold" : "font-semibold"}`}>
+                        {chat.user_one_username === user?.username
+                          ? chat.user_two_username
+                          : chat.user_one_username}
+                      </span>
+
+                      {/* ─── UNREAD COUNT BADGE (handles 9+) ─── */}
+                      {hasUnread && (
+                        <span className="bg-rose-500 text-white font-bold text-[10px] h-5 min-w-5 px-1.5 rounded-full flex items-center justify-center shadow-sm shrink-0 select-none animate-in fade-in zoom-in-95 duration-150">
+                          {chat.unread_count > 9 ? "9+" : chat.unread_count}
+                        </span>
+                      )}
+                    </div>
+
+                    <p className={`text-xs truncate mt-0.5 ${hasUnread ? "text-rose-600 font-semibold" : "text-[#0A4C38] font-medium"}`}>
+                      {hasUnread ? "New messages waiting" : "Click to view chat"}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </section>
 
@@ -209,26 +281,50 @@ export default function ChatContainer() {
                 Connection Secure. Coordinate your pickup safely.
               </div>
               <ProductRequestsCard productRequests={productRequests} currentUserId={user?.id} onUpdateStatus={updateRequestStatus} />
-              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              <div className="flex-1 overflow-y-auto p-6 space-y-4"
+                ref={containerRef}
+                onScroll={handleScroll}
+              >
+                {loadingOlderMessages && (
+                  <p className="text-center text-xs text-gray-400 py-2 animate-pulse">
+                    Loading historical messages...
+                  </p>
+                )}
                 {loadingMessages ? (
                   <p className="text-center text-xs text-gray-400">Loading messages...</p>
                 ) : (
-                  messages.map((msg) => {
+                  messages.map((msg, index) => {
                     const isMe = msg.sender_id === user?.id;
+
+                    const isUnreadByMe = !isMe && !msg.is_read;
+                    const isFirstUnread = isUnreadByMe && (index === 0 || messages[index - 1].is_read || messages[index - 1].sender_id === user?.id);
+
                     return (
-                      <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                        <div className="max-w-[70%]">
-                          <div
-                            className={`p-4 rounded-2xl shadow-sm ${isMe
-                              ? "bg-[#0A4C38] text-white rounded-tr-none"
-                              : "bg-white text-gray-800 border border-gray-100 rounded-tl-none"
-                              }`}
-                          >
-                            <p className="text-sm leading-relaxed">{msg.text}</p>
+                      <div key={msg.id} className="w-full space-y-4">
+                        {isFirstUnread && (
+                          <div className="flex items-center py-2 select-none">
+                            <div className="flex-1 border-t-2 border-rose-200/70" />
+                            <span className="mx-4 text-[10px] font-bold text-rose-500 uppercase tracking-wider bg-rose-50 px-2.5 py-1 rounded-full border border-rose-100 shadow-sm">
+                              New Messages
+                            </span>
+                            <div className="flex-1 border-t-2 border-rose-200/70" />
                           </div>
-                          <span className={`text-[10px] text-gray-400 block mt-1 ${isMe ? "text-right" : "text-left"}`}>
-                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                          </span>
+                        )}
+
+                        <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                          <div className="max-w-[70%]">
+                            <div
+                              className={`p-4 rounded-2xl shadow-sm ${isMe
+                                ? "bg-[#0A4C38] text-white rounded-tr-none"
+                                : "bg-white text-gray-800 border border-gray-100 rounded-tl-none"
+                                }`}
+                            >
+                              <p className="text-sm leading-relaxed">{msg.text}</p>
+                            </div>
+                            <span className={`text-[10px] text-gray-400 block mt-1 ${isMe ? "text-right" : "text-left"}`}>
+                              {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     );
@@ -236,7 +332,6 @@ export default function ChatContainer() {
                 )}
               </div>
 
-              {/* INPUT BAR */}
               <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-gray-100 shrink-0 flex gap-3">
                 <input
                   type="text"

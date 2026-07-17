@@ -1,6 +1,6 @@
 from typing import Annotated, Any, List, Optional
 from sqlalchemy.orm import aliased
-from sqlmodel import select
+from sqlmodel import func, select
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from sqlalchemy.orm import joinedload
@@ -56,8 +56,16 @@ def get_user_chat_rooms(
     U1 = aliased(User)
     U2 = aliased(User)
 
+    unread_subquery = (
+        select(func.count(Message.id))
+        .where(Message.chat_room_id == ChatRoom.id)
+        .where(Message.sender_id != user_id)
+        .where(Message.is_read == False)
+        .scalar_subquery()
+    )
+
     statement = (
-        select(ChatRoom, U1.username, U2.username)
+        select(ChatRoom, U1.username, U2.username, unread_subquery)
         .join(U1, ChatRoom.user_one_id == U1.id)
         .join(U2, ChatRoom.user_two_id == U2.id)
         .where((ChatRoom.user_one_id == user_id) | (ChatRoom.user_two_id == user_id))
@@ -72,8 +80,9 @@ def get_user_chat_rooms(
             "user_two_id": room.user_two_id,
             "user_one_username": u1_name,
             "user_two_username": u2_name,
+            "unread_count": unread_count,  # <-- Added counter payload
         }
-        for room, u1_name, u2_name in results
+        for room, u1_name, u2_name, unread_count in results
     ]
 
 
@@ -82,13 +91,20 @@ def get_message_history(
     room_id: int,
     db: SessionDep,
     current_user: Annotated[dict, Depends(verifyUserTokenSession)],
+    offset: int = 0,  # Skip this many items from the newest message
+    limit: int = 10,  # Load 10 messages at a time
 ):
     statement = (
         select(Message)
         .where(Message.chat_room_id == room_id)
-        .order_by(col(Message.createdAt))
+        .order_by(col(Message.createdAt).desc())
+        .offset(offset)
+        .limit(limit)
     )
-    return db.exec(statement).all()
+
+    results = db.exec(statement).all()
+
+    return list(reversed(results))
 
 
 @app.websocket("/ws/{room_id}/{user_id}")
@@ -105,22 +121,26 @@ async def websocket_chat_endpoint(
             data = await websocket.receive_text()
             message_data = json.loads(data)
 
-            new_msg = Message(
-                chat_room_id=room_id, sender_id=user_id, text=message_data["text"]
-            )
-            db.add(new_msg)
-            db.commit()
-            db.refresh(new_msg)
+            if message_data["action"] == "send_message":
+                new_msg = Message(
+                    chat_room_id=room_id, sender_id=user_id, text=message_data["text"]
+                )
+                db.add(new_msg)
+                db.commit()
+                db.refresh(new_msg)
 
-            await manager.broadcast(
-                room_id,
-                {
-                    "id": new_msg.id,
-                    "sender_id": new_msg.sender_id,
-                    "text": new_msg.text,
-                    "createdAt": new_msg.createdAt,
-                },
-            )
+                await manager.broadcast(
+                    room_id,
+                    {
+                        "id": new_msg.id,
+                        "sender_id": new_msg.sender_id,
+                        "text": new_msg.text,
+                        "createdAt": new_msg.createdAt,
+                        "is_read": new_msg.is_read,
+                    },
+                )
+            elif message_data["action"] == "update_status":
+                await manager.broadcast(room_id, {"type": "status_update"})
     except WebSocketDisconnect:
         manager.disconnect(websocket, room_id)
 
@@ -148,3 +168,25 @@ def checkChatRoom(
     session.commit()
     session.refresh(new_room)
     return new_room.id
+
+
+@app.put("/read-all/{room_id}")
+def mark_messages_as_read(
+    room_id: int,
+    db: SessionDep,
+    current_user: Annotated[dict, Depends(verifyUserTokenSession)],
+):
+    statement = (
+        select(Message)
+        .where(Message.chat_room_id == room_id)
+        .where(Message.sender_id != current_user["userId"])
+        .where(Message.is_read == False)
+    )
+    unread_messages = db.exec(statement).all()
+
+    for msg in unread_messages:
+        msg.is_read = True
+        db.add(msg)
+
+    db.commit()
+    return {"status": "success", "updated_count": len(unread_messages)}

@@ -10,8 +10,12 @@ export async function fetchUserRooms(userId: number) {
   return response.data;
 }
 
-export async function fetchMessageHistory(roomId: number) {
+export async function fetchMessageHistory(roomId: number, offset = 0) {
   const response = await axios.get(`${baseUrl}/api/chat-room/history/${roomId}`, {
+    params: {
+      limit: 10,
+      offset,
+    },
     withCredentials: true
   });
   return response.data;
@@ -22,6 +26,13 @@ export async function requestProduct({ itemId, currentUserId }: { itemId: number
     item_id: itemId,
     user_id: currentUserId
   }, {
+    withCredentials: true
+  });
+  return response.data;
+}
+
+export async function markRoomAsRead(roomId: number) {
+  const response = await axios.put(`${baseUrl}/api/chat-room/read-all/${roomId}`, {}, {
     withCredentials: true
   });
   return response.data;

@@ -66,6 +66,7 @@ export default function ItemShareCard({
       console.log(data);
       toast("Request sent successfully")
       await queryClient.invalidateQueries({ queryKey: ["share-items-filter"] });
+      await queryClient.invalidateQueries({ queryKey: ["my-requests", user?.id] });
     },
     onError: (err) => {
       console.log(err);

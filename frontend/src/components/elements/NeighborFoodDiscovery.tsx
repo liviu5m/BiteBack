@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Search, MapPin, Scale, Calendar, Check, HelpCircle, Loader2, Compass, Tag, Layers } from 'lucide-react';
+import { Search, MapPin, Scale, Calendar, Check, HelpCircle, Loader2, Compass, Tag, Layers, X } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { deleteShareItemFunc, getMyListingsFunc, getMyRequestsFunc, getShareItemsFunc, updateShareItemFunc } from '@/api/shareItem';
 import ItemShareCard from './ItemShareCard';
 import type { FoodItem, RequestedItemWithStatus } from '@/lib/Types';
 import { useAppContext } from "@/lib/AppProvider";
 import EditShareItemModal from './EditShareItemForm';
+import { deleteProductRequestFunc, updateProductRequestFunc } from '@/api/productRequest';
+import Swal from 'sweetalert2';
 
 type TabOption = 'discover' | 'my-listings' | 'my-requests';
 
@@ -39,19 +41,19 @@ export default function NeighborFoodDiscovery() {
   const { data: shareItems = [], isLoading: isLoadingDiscover } = useQuery<FoodItem[]>({
     queryKey: ["share-items-filter", searchTerm, maxDistanceKm, coordinates?.lat, coordinates?.lng],
     queryFn: () => getShareItemsFunc(searchTerm, maxDistanceKm, coordinates!),
-    enabled: !!coordinates && activeTab === 'discover',
+    enabled: !!coordinates,
   });
 
   const { data: myListings = [], isLoading: isLoadingMyListings } = useQuery<FoodItem[]>({
     queryKey: ["my-listings", user?.id],
     queryFn: () => getMyListingsFunc(),
-    enabled: !!user?.id && activeTab === 'my-listings',
+    enabled: !!user?.id,
   });
 
   const { data: myRequests = [], isLoading: isLoadingMyRequests } = useQuery<RequestedItemWithStatus[]>({
     queryKey: ["my-requests", user?.id],
     queryFn: () => getMyRequestsFunc(),
-    enabled: !!user?.id && activeTab === 'my-requests',
+    enabled: !!user?.id,
   });
 
   const getStatusBadge = (status: string) => {
@@ -68,6 +70,19 @@ export default function NeighborFoodDiscovery() {
       </span>
     );
   };
+
+  const { mutate: deleteRequest } = useMutation({
+    mutationKey: ["request-product-request-status"],
+    mutationFn: (id: number) => deleteProductRequestFunc(id),
+    onSuccess: (data) => {
+      console.log(data);
+      queryClient.invalidateQueries({ queryKey: ["my-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["share-items-filter"] });
+    },
+    onError: (err) => {
+      console.log(err);
+    }
+  })
 
   const { mutate: deleteMutation } = useMutation({
     mutationKey: ["delete-item"],
@@ -93,26 +108,9 @@ export default function NeighborFoodDiscovery() {
       alert("Failed to update item.");
     }
   });
-
-  const handleEditSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!editingItem) return;
-
-    const formData = new FormData(e.currentTarget);
-    const updatedData: Partial<FoodItem> = {
-      name: formData.get('name') as string,
-      weight: formData.get('weight') as string,
-      notes: formData.get('notes') as string,
-      expiryDate: formData.get('expiryDate') as string,
-    };
-
-    updateMutation({ id: Number(editingItem.id), data: updatedData });
-  };
-
   return (
     <div className="w-full max-w-7xl mx-auto p-4 text-left font-sans mt-10">
 
-      {/* SECTION TABS */}
       <div className="flex gap-2 border-b border-slate-200 mb-6">
         <button
           onClick={() => setActiveTab('discover')}
@@ -256,15 +254,43 @@ export default function NeighborFoodDiscovery() {
                       </div>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-4 self-end sm:self-auto shrink-0">
-                    <div className="text-right hidden xs:block">
-                      <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Requested on</p>
-                      <p className="text-xs font-medium text-slate-600">
-                        {new Date(request.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                      </p>
+                  <div className='flex items-center justify-center gap-4'>
+                    <div className="flex items-center gap-4 self-end sm:self-auto shrink-0">
+                      <div className="text-right hidden xs:block">
+                        <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Requested on</p>
+                        <p className="text-xs font-medium text-slate-600">
+                          {new Date(request.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                        </p>
+                      </div>
+                      {getStatusBadge(request.status)}
                     </div>
-                    {getStatusBadge(request.status)}
+                    <div>
+                      <X className="h-6 w-6 text-red-500 cursor-pointer hover:rotate-180 hover:scale-110" onClick={() => {
+                        Swal.fire({
+                          title: "Are you sure?",
+                          text: "",
+                          icon: "warning",
+                          showCancelButton: true,
+                          confirmButtonColor: "#be123c",
+                          cancelButtonColor: "#64748b",
+                          confirmButtonText: "Yes, delete it!",
+                          cancelButtonText: "Cancel",
+                          background: "#ffffff",
+                          customClass: {
+                            popup: "rounded-2xl border border-slate-100 font-sans",
+                            title: "text-slate-800 font-bold text-lg",
+                            htmlContainer: "text-slate-500 text-sm",
+                            confirmButton: "rounded-lg text-sm font-semibold px-4 py-2 cursor-pointer",
+                            cancelButton: "rounded-lg text-sm font-semibold px-4 py-2 cursor-pointer"
+                          }
+                        }).then((result) => {
+                          if (result.isConfirmed) {
+                            deleteRequest(request.id)
+                          }
+                        })
+                      }
+                      } />
+                    </div>
                   </div>
                 </div>
               ))}

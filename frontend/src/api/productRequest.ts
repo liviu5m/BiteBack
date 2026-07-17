@@ -14,8 +14,6 @@ export async function createProductRequestFunc(itemId: number, userId: number, o
 }
 
 export async function getProductRequestsByOwnerIdFunc(userId: number, requesterId: number) {
-  console.log(userId, requesterId);
-
   const response = await axios.get(`${baseUrl}/api/product-request/owner/${userId}`, {
     params: {
       requester_id: requesterId
@@ -26,9 +24,17 @@ export async function getProductRequestsByOwnerIdFunc(userId: number, requesterI
 }
 
 export async function updateProductRequestFunc(id: number, status: string) {
+
   const response = await axios.put(`${baseUrl}/api/product-request/${id}`, {
     status: status
   }, {
+    withCredentials: true
+  });
+  return response.data;
+}
+
+export async function deleteProductRequestFunc(id: number) {
+  const response = await axios.delete(`${baseUrl}/api/product-request/${id}`, {
     withCredentials: true
   });
   return response.data;

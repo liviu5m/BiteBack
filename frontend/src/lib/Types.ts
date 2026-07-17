@@ -88,6 +88,7 @@ export type ChatRoom = {
   user_two_id: number;
   user_one_username: string;
   user_two_username: string;
+  unread_count: number;
 }
 
 export type ProductRequestDetails = {

@@ -97,7 +97,7 @@ class ProductRequest(SQLModel, table=True):
     )
     owner_id: int = Field(foreign_key="users.id", nullable=False, ondelete="CASCADE")
     status: RequestStatus = Field(default=RequestStatus.PENDING, nullable=False)
-    createdAt: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    createdAt: datetime = Field(default_factory=lambda: datetime.now(), nullable=False)
 
 
 class ChatRoom(SQLModel, table=True):
@@ -105,8 +105,8 @@ class ChatRoom(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     user_one_id: int = Field(foreign_key="users.id", nullable=False)
     user_two_id: int = Field(foreign_key="users.id", nullable=False)
-    createdAt: datetime = Field(default_factory=datetime.utcnow, nullable=False)
     messages: List["Message"] = Relationship(back_populates="chat_room")
+    createdAt: datetime = Field(default_factory=lambda: datetime.now(), nullable=False)
     user_one: "User" = Relationship(
         sa_relationship_kwargs={"foreign_keys": "[ChatRoom.user_one_id]"}
     )
@@ -121,5 +121,6 @@ class Message(SQLModel, table=True):
     chat_room_id: int = Field(foreign_key="chat_rooms.id", nullable=False)
     sender_id: int = Field(foreign_key="users.id", nullable=False)
     text: str = Field(nullable=False)
-    createdAt: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    createdAt: datetime = Field(default_factory=lambda: datetime.now(), nullable=False)
     chat_room: ChatRoom = Relationship(back_populates="messages")
+    is_read: bool = Field(default=False, nullable=False)
