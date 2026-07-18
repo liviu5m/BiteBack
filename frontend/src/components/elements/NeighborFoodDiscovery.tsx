@@ -109,12 +109,12 @@ export default function NeighborFoodDiscovery() {
     }
   });
   return (
-    <div className="w-full max-w-7xl mx-auto p-4 text-left font-sans mt-10">
+    <div className="w-full max-w-7xl mx-auto p-2 sm:p-3 md:p-4 text-left font-sans mt-4 sm:mt-6 md:mt-10">
 
-      <div className="flex gap-2 border-b border-slate-200 mb-6">
+      <div className="flex gap-1 sm:gap-2 border-b border-slate-200 mb-4 sm:mb-6 overflow-x-auto no-scrollbar">
         <button
           onClick={() => setActiveTab('discover')}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all cursor-pointer ${activeTab === 'discover'
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${activeTab === 'discover'
             ? 'border-emerald-800 text-emerald-800'
             : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
@@ -124,7 +124,7 @@ export default function NeighborFoodDiscovery() {
         </button>
         <button
           onClick={() => setActiveTab('my-listings')}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all cursor-pointer ${activeTab === 'my-listings'
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${activeTab === 'my-listings'
             ? 'border-emerald-800 text-emerald-800'
             : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
@@ -134,7 +134,7 @@ export default function NeighborFoodDiscovery() {
         </button>
         <button
           onClick={() => setActiveTab('my-requests')}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all cursor-pointer ${activeTab === 'my-requests'
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${activeTab === 'my-requests'
             ? 'border-emerald-800 text-emerald-800'
             : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
@@ -146,7 +146,7 @@ export default function NeighborFoodDiscovery() {
 
       {activeTab === 'discover' && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center bg-white border border-slate-200/80 p-4 rounded-xl shadow-sm mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-center bg-white border border-slate-200/80 p-3 sm:p-4 rounded-xl shadow-sm mb-4 sm:mb-6">
             <div className="relative md:col-span-8 flex items-center">
               <Search className="absolute left-3.5 h-4 w-4 text-slate-400 pointer-events-none" />
               <input
@@ -185,7 +185,7 @@ export default function NeighborFoodDiscovery() {
               <p className="text-sm font-medium text-slate-500">No food items found matching your criteria nearby.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
               {shareItems.map((item) => (
                 <ItemShareCard key={item.id} item={item} coordinates={coordinates} />
               ))}
@@ -206,7 +206,7 @@ export default function NeighborFoodDiscovery() {
               <HelpCircle className="h-8 w-8 text-slate-300 mx-auto mb-2" />
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
               {myListings.map((item, index) => (
                 <ItemShareCard
                   key={item.id}
@@ -240,7 +240,7 @@ export default function NeighborFoodDiscovery() {
               {myRequests.map(({ share_item, request }) => (
                 <div
                   key={request.id}
-                  className="bg-white border border-slate-200/80 p-5 rounded-xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                  className="bg-white border border-slate-200/80 p-4 sm:p-5 rounded-xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4"
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-xl flex items-center justify-center font-bold text-lg shrink-0">
@@ -254,9 +254,9 @@ export default function NeighborFoodDiscovery() {
                       </div>
                     </div>
                   </div>
-                  <div className='flex items-center justify-center gap-4'>
-                    <div className="flex items-center gap-4 self-end sm:self-auto shrink-0">
-                      <div className="text-right hidden xs:block">
+                  <div className='flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 sm:gap-3 md:gap-4 w-full sm:w-auto'>
+                    <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 self-stretch sm:self-auto shrink-0">
+                      <div className="text-left sm:text-right block">
                         <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Requested on</p>
                         <p className="text-xs font-medium text-slate-600">
                           {new Date(request.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}

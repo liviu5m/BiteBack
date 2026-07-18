@@ -65,15 +65,15 @@ const Cook = () => {
   }
   return isItemsLoading ? <Loader /> : (
     <BodyLayout>
-      <div className="min-h-screen w-[calc(100vw-350px)] flex items-start gap-10 py-20 px-60 flex-col">
+      <div className="min-h-screen w-full lg:w-[calc(100vw-350px)] flex items-start gap-4 sm:gap-6 lg:gap-10 py-6 sm:py-8 md:py-12 lg:py-20 px-3 sm:px-6 md:px-8 lg:px-12 xl:px-20 2xl:px-40 flex-col max-w-full overflow-x-hidden">
 
-        <div className="flex gap-5">
-          <Link to={"/dashboard"} className="w-12 h-12 rounded-full bg-white border border-gray-200 shadow text-[#1E4D3B] flex items-center justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 w-full">
+          <Link to={"/dashboard"} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white border border-gray-200 shadow text-[#1E4D3B] flex items-center justify-center shrink-0">
             <ArrowLeft className="text-xl" />
           </Link>
-          <div>
-            <h1 className="text-[#1E4D3B] font-bold text-4xl">Save My Fridge</h1>
-            <p className="text-gray-500 mt-2">
+          <div className="min-w-0">
+            <h1 className="text-[#1E4D3B] font-bold text-2xl sm:text-3xl lg:text-4xl">Save My Fridge</h1>
+            <p className="text-gray-500 mt-1 sm:mt-2 text-sm sm:text-base break-words">
               {!items || items.length === 0 ? "Select some food in order to proceed" : `Using: ${items.map((item: FridgeItem) => item.name).join(', ')} `}
             </p>
           </div>
@@ -86,14 +86,14 @@ const Cook = () => {
               disabled={isLoading || isRefetching}
               className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors focus:outline-none disabled:opacity-50"
             >
-              <RefreshCcw className={`w - 4 h - 4 ${isRefetching ? 'animate-spin' : ''} `} />
+              <RefreshCcw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
               {isRefetching ? 'Refreshing...' : 'Refresh'}
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               onClick={() => setTab('ready')}
-              className={`flex items-center justify-between p-5 rounded-2xl border transition-all duration-200 text-left cursor-pointer focus:outline-none ${tab === 'ready'
+              className={`flex items-center justify-between p-4 sm:p-5 rounded-xl sm:rounded-2xl border transition-all duration-200 text-left cursor-pointer focus:outline-none ${tab === 'ready'
                 ? 'bg-[#1e4632] border-[#1e4632] text-white shadow-md'
                 : 'bg-white border-gray-200 text-gray-800 hover:border-gray-300'
                 } `}
@@ -101,20 +101,20 @@ const Cook = () => {
               <div className="flex items-start gap-3">
                 <CheckCircle className={`w-5 h-5 mt-0.5 ${tab === 'ready' ? 'text-white' : 'text-gray-500'} `} />
                 <div>
-                  <h3 className="font-bold text-lg leading-tight">Ready to cook</h3>
+                  <h3 className="font-bold text-base sm:text-lg leading-tight">Ready to cook</h3>
                   <p className={`text-sm mt-0.5 ${tab === 'ready' ? 'text-emerald-100' : 'text-gray-500'} `}>
                     No shopping needed
                   </p>
                 </div>
               </div>
-              <span className="text-4xl font-serif font-bold px-2">
-                {tab == "ready" ? foods && foods.length : <UtensilsCrossed className="w-8 h-8" />}
+              <span className="text-2xl sm:text-4xl font-serif font-bold px-1 sm:px-2 shrink-0">
+                {tab == "ready" ? foods && foods.length : <UtensilsCrossed className="w-6 h-6 sm:w-8 sm:h-8" />}
               </span>
             </button>
 
             <button
               onClick={() => setTab('missing')}
-              className={`flex items-center justify-between p-5 rounded-2xl border transition-all duration-200 text-left cursor-pointer focus:outline-none ${tab === 'missing'
+              className={`flex items-center justify-between p-4 sm:p-5 rounded-xl sm:rounded-2xl border transition-all duration-200 text-left cursor-pointer focus:outline-none ${tab === 'missing'
                 ? 'bg-[#1e4632] border-[#1e4632] text-white shadow-md'
                 : 'bg-white border-gray-200 text-gray-800 hover:border-gray-300'
                 } `}
@@ -122,21 +122,21 @@ const Cook = () => {
               <div className="flex items-start gap-3">
                 <ShoppingBag className={`w-5 h-5 mt-0.5 ${tab === 'missing' ? 'text-white' : 'text-gray-500'} `} />
                 <div>
-                  <h3 className="font-bold text-lg leading-tight">Need a few things</h3>
-                  <p className={`text - sm mt - 0.5 ${tab === 'missing' ? 'text-emerald-100' : 'text-gray-500'} `}>
+                  <h3 className="font-bold text-base sm:text-lg leading-tight">Need a few things</h3>
+                  <p className={`text-sm mt-0.5 ${tab === 'missing' ? 'text-emerald-100' : 'text-gray-500'}`}>
                     Missing 1–2 items (with swaps)
                   </p>
                 </div>
               </div>
-              <span className="text-4xl font-serif font-bold px-2">
-                {tab == "missing" ? foods && foods.length : <UtensilsCrossed className="w-8 h-8" />}
+              <span className="text-2xl sm:text-4xl font-serif font-bold px-1 sm:px-2 shrink-0">
+                {tab == "missing" ? foods && foods.length : <UtensilsCrossed className="w-6 h-6 sm:w-8 sm:h-8" />}
               </span>
             </button>
           </div>
 
           <button
             onClick={() => setTab('saved')}
-            className={`w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl border transition-all duration-200 font-medium cursor-pointer focus:outline-none ${tab === 'saved'
+            className={`w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 px-4 rounded-xl border transition-all duration-200 text-sm sm:text-base font-medium cursor-pointer focus:outline-none ${tab === 'saved'
               ? 'bg-[#1e4632] border-[#1e4632] text-white shadow-sm'
               : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
               } `}
@@ -145,16 +145,16 @@ const Cook = () => {
             <span>Saved recipes ({recipes ? recipes.length : 0})</span>
           </button>
         </div>
-        <div className="flex items-center justify-center w-full">
+        <div className="flex items-center justify-center w-full px-0 sm:px-4">
           {tab == "ready" || tab == "missing" ?
             isLoading && hasItemsSelected ? <SkeletonLoader /> :
-              <div className="flex flex-col gap-8">
-                {!foods && <p className="text-xl font-semibold text-center">No Foods available</p>}
+              <div className="flex flex-col gap-6 sm:gap-8 w-full max-w-3xl">
+                {!foods && <p className="text-lg sm:text-xl font-semibold text-center px-4">No Foods available</p>}
                 {foods && foods.map((food, index) => <RecipeCard key={index} recipe={food} recipes={recipes} />)}
               </div>
             :
-            <div className="flex flex-col gap-8">
-              {recipes.length == 0 && <p className="text-lg font-semibold">No saved recipe, visit some and save them.</p>}
+            <div className="flex flex-col gap-6 sm:gap-8 w-full max-w-3xl">
+              {recipes.length == 0 && <p className="text-base sm:text-lg font-semibold text-center px-4">No saved recipe, visit some and save them.</p>}
               {recipes.map((recipe, index) => <RecipeCard key={index} recipe={{ ...recipe, missing_ingredients: JSON.parse(recipe.missing_ingredients), used_ingredients: JSON.parse(recipe.used_ingredients) }} recipes={recipes} />)}
             </div>
           }

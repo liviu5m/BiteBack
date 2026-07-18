@@ -82,19 +82,17 @@ const Dashboard = () => {
 
   return (
     <BodyLayout>
-      <div className="min-h-screen w-[calc(100vw-350px)] p-6 flex justify-center items-start gap-10">
-        <div className="bg-white p-10 rounded-2xl shadow w-80 flex flex-col items-center justify-center gap-10">
-          <h1 className="text-[#1e4d3b] text-xl font-bold">Your Impact</h1>
+      <div className="min-h-screen w-full lg:w-[calc(100vw-350px)] p-3 sm:p-4 md:p-6 flex flex-col xl:flex-row justify-center items-stretch xl:items-start gap-4 sm:gap-6 xl:gap-10 max-w-full overflow-x-hidden">
+        <div className="bg-white p-4 sm:p-6 md:p-10 rounded-xl sm:rounded-2xl shadow w-full sm:w-72 md:w-80 mx-auto xl:mx-0 flex flex-col items-center justify-center gap-4 sm:gap-6 md:gap-10 shrink-0">
+          <h1 className="text-[#1e4d3b] text-lg sm:text-xl font-bold">Your Impact</h1>
           <div
-            className="relative flex items-center justify-center rounded-full shadow-inner"
+            className="relative flex items-center justify-center rounded-full shadow-inner w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[160px] md:h-[160px]"
             style={{
-              width: "160px",
-              height: "160px",
               background: `conic-gradient(#10b981 ${parseInt(savedPercentage)}%, #f3f4f6 ${parseInt(savedPercentage)}% 100%)`
             }}
           >
-            <div className="absolute w-[132px] h-[132px] bg-white rounded-full flex flex-col items-center justify-center select-none">
-              <span className="text-3xl font-black text-emerald-900 leading-none">
+            <div className="absolute w-[82%] h-[82%] bg-white rounded-full flex flex-col items-center justify-center select-none">
+              <span className="text-2xl sm:text-3xl font-black text-emerald-900 leading-none">
                 {savedPercentage ? parseInt(savedPercentage) : 0}%
               </span>
               <span className="text-xs font-bold text-gray-400 tracking-wider mt-1">
@@ -103,19 +101,19 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.01)] w-full max-w-[700px] p-10 flex flex-col gap-8 h-[calc(100vh-100px)]">
-          <div className="flex items-center justify-between border-b border-gray-50 pb-6">
-            <h1 className="text-3xl font-bold text-[#1e4d3b] tracking-tight">
+        <div className="bg-white rounded-xl sm:rounded-2xl md:rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.01)] w-full max-w-[700px] mx-auto xl:mx-0 p-4 sm:p-6 md:p-10 flex flex-col gap-4 sm:gap-6 md:gap-8 min-h-[40vh] sm:min-h-[50vh] lg:h-[calc(100vh-100px)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-gray-50 pb-3 sm:pb-4 md:pb-6">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1e4d3b] tracking-tight">
               Virtual Fridge
             </h1>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               <button
                 onClick={() => {
                   localStorage.removeItem("items")
                   setCheckedItems({})
                 }}
                 type="button"
-                className="flex items-center gap-1.5 px-4 py-2 bg-white text-red-500 rounded-xl text-sm font-semibold hover:bg-red-500 cursor-pointer hover:text-white shadow-sm transition-all"
+                className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-white text-red-500 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold hover:bg-red-500 cursor-pointer hover:text-white shadow-sm transition-all flex-1 sm:flex-none justify-center"
               >
                 <X size={16} />
                 <span>Clear</span>
@@ -125,7 +123,7 @@ const Dashboard = () => {
                   setIsAddModalOpened(true);
                 }}
                 type="button"
-                className="cursor-pointer flex items-center gap-1.5 px-4 py-2 bg-[#1e4d3b] text-white rounded-xl text-sm font-semibold hover:bg-[#153629] shadow-sm transition-all"
+                className="cursor-pointer flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-[#1e4d3b] text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold hover:bg-[#153629] shadow-sm transition-all flex-1 sm:flex-none justify-center"
               >
                 <Plus size={16} />
                 <span>Add</span>
@@ -134,7 +132,7 @@ const Dashboard = () => {
           </div>
 
           <div className="flex flex-col gap-8 overflow-y-scroll h-full">
-            {items && items.length == 0 && <p className="text-xl font-semibold text-center">No Food in the Virtual Fridge</p>}
+            {items && items.length == 0 && <p className="text-base sm:text-lg md:text-xl font-semibold text-center px-2">No Food in the Virtual Fridge</p>}
             {actionRequired.length > 0 && (
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-2 text-rose-500 font-bold text-xs uppercase tracking-wider px-1">
@@ -205,13 +203,13 @@ const Dashboard = () => {
         </div>
         {isAddItemModalOpened && <Modal title={""} isOpen={isAddItemModalOpened} onClose={() => setIsAddModalOpened(false)} children={
           <div>
-            <div className="flex items-center gap-5 mb-5">
-              <div className="rounded-full h-12 w-12 text-2xl flex items-center justify-center bg-[#E9EDEB]" >
+            <div className="flex items-center gap-4 sm:gap-5 mb-4 sm:mb-5">
+              <div className="rounded-full h-10 w-10 sm:h-12 sm:w-12 text-xl sm:text-2xl flex items-center justify-center bg-[#E9EDEB]" >
                 <PlusIcon className=" text-[#1E4D3B] font-bold" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-[#1E4D3B]">Add to fridge</h1>
-                <p className="text-gray-400">We'll guess shelf life — adjust if you know better</p>
+                <h1 className="text-xl sm:text-3xl font-bold text-[#1E4D3B]">Add to fridge</h1>
+                <p className="text-sm sm:text-base text-gray-400">We'll guess shelf life — adjust if you know better</p>
               </div>
             </div>
             <form className="flex flex-col gap-5 mt-10" onSubmit={(e) => {
@@ -220,18 +218,18 @@ const Dashboard = () => {
             }}>
               <div className="flex flex-col gap-3">
                 <label htmlFor="name" className="text-[#1E4D3B]">Item name</label>
-                <input type="text" placeholder="e.g. Whole Milk" className="px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" value={itemData.name} onChange={(e) => setItemData({ ...itemData, name: e.target.value })} />
+                <input type="text" placeholder="e.g. Whole Milk" className="px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-gray-100 border border-gray-100 text-sm sm:text-base w-full" value={itemData.name} onChange={(e) => setItemData({ ...itemData, name: e.target.value })} />
               </div>
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                 <div className="flex flex-col gap-3 ">
                   <label htmlFor="name" className="text-[#1E4D3B]">Weight (g)</label>
-                  <input type="number" className=" px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" min={0}
+                  <input type="number" className="px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-gray-100 border border-gray-100 text-sm sm:text-base w-full" min={0}
                     value={itemData.weight} onChange={(e) => setItemData({ ...itemData, weight: e.target.value })}
                   />
                 </div>
                 <div className="flex flex-col gap-3 ">
                   <label htmlFor="name" className="text-[#1E4D3B]">Category</label>
-                  <select className="px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" value={itemData.category} onChange={(e) => setItemData({ ...itemData, category: e.target.value as ItemCategory })} defaultValue={"produce"} >
+                  <select className="px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-gray-100 border border-gray-100 text-sm sm:text-base w-full" value={itemData.category} onChange={(e) => setItemData({ ...itemData, category: e.target.value as ItemCategory })} defaultValue={"produce"} >
                     <option value="produce" >Produce</option>
                     <option value="dairy">Dairy</option>
                     <option value="meat">Meat</option>
@@ -243,9 +241,9 @@ const Dashboard = () => {
               </div>
               <div className="w-full">
                 <label htmlFor="name" className="text-[#1E4D3B]">Expiry Date</label>
-                <input type="date" className="mt-2 w-full px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" value={itemData.expiryDate} onChange={(e) => setItemData({ ...itemData, expiryDate: e.target.value })} />
+                <input type="date" className="mt-2 w-full px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-gray-100 border border-gray-100 text-sm sm:text-base" value={itemData.expiryDate} onChange={(e) => setItemData({ ...itemData, expiryDate: e.target.value })} />
               </div>
-              <button className={`text-white flex items-center justify-center gap-4 ${itemData.name != "" && itemData.weight && itemData.expiryDate ? "bg-[#1E4D3B] cursor-pointer" : "bg-[#A5B9B1]"} rounded-2xl px-5 py-3 font-semibold text-xl`} disabled={itemData.name == "" || itemData.weight == '' || itemData.expiryDate == ''}>
+              <button className={`text-white flex items-center justify-center gap-3 sm:gap-4 ${itemData.name != "" && itemData.weight && itemData.expiryDate ? "bg-[#1E4D3B] cursor-pointer" : "bg-[#A5B9B1]"} rounded-2xl px-5 py-3 font-semibold text-base sm:text-xl`} disabled={itemData.name == "" || itemData.weight == '' || itemData.expiryDate == ''}>
                 <PlusIcon />
                 <span>Add to fridge</span>
               </button>
@@ -260,19 +258,19 @@ const Dashboard = () => {
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, y: 100, x: "-50%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed left-1/2 bottom-10 z-50 bg-[#1E4D3B] text-white px-8 py-5 rounded-xl flex items-center justify-between gap-30"
+            className="fixed left-1/2 bottom-20 lg:bottom-10 z-50 bg-[#1E4D3B] text-white px-4 sm:px-8 py-4 sm:py-5 rounded-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 sm:gap-8 lg:gap-30 w-[calc(100%-2rem)] sm:w-auto max-w-lg sm:max-w-none"
           >
-            <div className="flex items-center justify-between gap-5">
-              <div className="w-12 h-12 text-white flex items-center justify-center bg-gray-50/10 rounded-full">
+            <div className="flex items-center justify-between sm:justify-start gap-4 sm:gap-5">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 text-white flex items-center justify-center bg-gray-50/10 rounded-full shrink-0">
                 <ChefHat />
               </div>
               <div>
-                <h2 className="font-semibold text-lg">{itemsChecked} items selected</h2>
-                <p className="text-sm text-gray-300">Ready to rescue</p>
+                <h2 className="font-semibold text-base sm:text-lg">{itemsChecked} items selected</h2>
+                <p className="text-xs sm:text-sm text-gray-300">Ready to rescue</p>
               </div>
             </div>
-            <div>
-              <Link to={"/cook"} className="bg-white text-[#1E4D3B] font-semibold rounded-xl px-5 py-3 cursor-pointer">
+            <div className="w-full sm:w-auto">
+              <Link to={"/cook"} className="block text-center bg-white text-[#1E4D3B] font-semibold rounded-xl px-5 py-3 cursor-pointer">
                 Find Recipes
               </Link>
             </div>

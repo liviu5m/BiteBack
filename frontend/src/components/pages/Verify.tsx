@@ -56,10 +56,10 @@ const Verify = () => {
   });
 
   return (
-    <div>
-      <div className="flex items-center justify-center min-h-screen flex-col px-4 py-8">
-        <div className="w-full max-w-md p-6 sm:p-8 md:p-10 rounded-lg bg-white shadow z-20">
-          <p>
+    <div className="bg-[#FAF7F2] w-full min-h-screen md:min-h-[100dvh]">
+      <div className="flex items-center justify-center min-h-screen flex-col px-3 sm:px-4 md:px-6 py-6 sm:py-8">
+        <div className="w-full max-w-md p-5 sm:p-6 md:p-10 rounded-xl sm:rounded-2xl md:rounded-[32px] bg-white shadow-sm border border-gray-100 z-20 mx-auto">
+          <p className="text-xs sm:text-sm md:text-base text-center sm:text-left leading-relaxed">
             Code will expire in 5 minutes{" "}
             <span
               className="text-[#00ADB5] cursor-pointer"
@@ -75,14 +75,14 @@ const Verify = () => {
               verify();
             }}
           >
-            <h1 className="text-center mb-7 flex items-center justify-center gap-3 font-semibold text-lg">
+            <h1 className="text-center mb-4 sm:mb-6 md:mb-7 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 font-semibold text-base sm:text-lg md:text-xl">
               <ShieldCheck />
               <span>Verify Your Account</span>
             </h1>
-            <h3 className="text-center my-2 text-sm text-gray-600">
+            <h3 className="text-center my-2 sm:my-3 text-xs sm:text-sm text-gray-600 px-2">
               You have received on your email an verification code
             </h3>
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center overflow-x-auto px-1 sm:px-2 py-2">
               <InputOTP
                 maxLength={6}
                 value={verificationCode}
@@ -101,12 +101,12 @@ const Verify = () => {
                 </InputOTPGroup>
               </InputOTP>
             </div>
-            <button className="px-4 py-3 rounded-lg shadow bg-gray-200 w-full  mt-5 cursor-pointer hover:bg-gray-100 font-semibold upper">
+            <button className="px-4 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl shadow bg-[#1e4d3b] hover:bg-[#153629] text-white w-full mt-4 sm:mt-5 cursor-pointer font-semibold text-sm sm:text-base transition-colors">
               Submit
             </button>
           </form>
           <div>
-            <h2 className="text-red-500 text-center mt-5">
+            <h2 className="text-red-500 text-center mt-4 sm:mt-5 text-xs sm:text-sm px-2 break-words">
               {error}{" "}
               {error == "Verification code has expired" && (
                 <button

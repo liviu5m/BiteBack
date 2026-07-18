@@ -65,9 +65,9 @@ export const ItemRow = ({
 
   return (
     <li
-      className={`flex items-center justify-between border p-4 rounded-2xl select-none transition-all duration-200 ${rowClass}`}
+      className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 md:gap-4 border p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl md:rounded-2xl select-none transition-all duration-200 ${rowClass}`}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
         <div className="relative flex items-center justify-center">
           <input
             type="checkbox"
@@ -94,7 +94,7 @@ export const ItemRow = ({
         </div>
 
         <div className="flex flex-col leading-tight">
-          <span className={`text-lg font-bold text-slate-800 ${isChecked ? "line-through text-slate-400" : ""}`}>
+          <span className={`text-base sm:text-lg font-bold text-slate-800 truncate ${isChecked ? "line-through text-slate-400" : ""}`}>
             {item.name}
           </span>
           <span className="text-sm text-slate-400 font-medium mt-0.5">
@@ -102,30 +102,32 @@ export const ItemRow = ({
           </span>
         </div>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 w-full sm:w-auto shrink-0">
+        <div className="flex items-center gap-2 sm:gap-4">
         <div className="p-1 cursor-pointer" onClick={() => {
           setEditItemId(item.id)
         }} >
-          <Edit className="text-green-500" />
+          <Edit className="text-green-500 w-4 h-4 sm:w-5 sm:h-5" />
         </div>
         <div className="p-1 cursor-pointer" onClick={() => {
           deleteItem()
         }}>
-          <Trash className="text-red-500" />
+          <Trash className="text-red-500 w-4 h-4 sm:w-5 sm:h-5" />
         </div>
-      </div>
-      <span className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap min-w-[70px] text-center shadow-sm ${badgeClass}`}>
+        </div>
+      <span className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap min-w-[60px] sm:min-w-[70px] text-center shadow-sm ${badgeClass}`}>
         {daysTillExpiry} {daysTillExpiry === 1 ? "day" : "days"} </span>
+      </div>
       {
         editItemId != -1 && <Modal title={""} isOpen={editItemId != -1} onClose={() => setEditItemId(-1)} children={
           <div>
-            <div className="flex items-center gap-5 mb-5">
-              <div className="rounded-full h-12 w-12 text-2xl flex items-center justify-center bg-[#E9EDEB]" >
+            <div className="flex items-center gap-3 sm:gap-5 mb-4 sm:mb-5">
+              <div className="rounded-full h-10 w-10 sm:h-12 sm:w-12 text-xl sm:text-2xl flex items-center justify-center bg-[#E9EDEB]" >
                 <Edit2Icon className=" text-[#1E4D3B] font-bold" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-[#1E4D3B]">Edit Item</h1>
-                <p className="text-gray-400">We'll guess shelf life — adjust if you know better</p>
+                <h1 className="text-xl sm:text-3xl font-bold text-[#1E4D3B]">Edit Item</h1>
+                <p className="text-sm sm:text-base text-gray-400">We'll guess shelf life — adjust if you know better</p>
               </div>
             </div>
             <form className="flex flex-col gap-5 mt-10" onSubmit={(e) => {
@@ -134,18 +136,18 @@ export const ItemRow = ({
             }}>
               <div className="flex flex-col gap-3">
                 <label htmlFor="name" className="text-[#1E4D3B]">Item name</label>
-                <input type="text" placeholder="e.g. Whole Milk" className="px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" value={itemData.name} onChange={(e) => setItemData({ ...itemData, name: e.target.value })} />
+                <input type="text" placeholder="e.g. Whole Milk" className="px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-gray-100 border border-gray-100 text-sm sm:text-base w-full" value={itemData.name} onChange={(e) => setItemData({ ...itemData, name: e.target.value })} />
               </div>
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                 <div className="flex flex-col gap-3 ">
                   <label htmlFor="name" className="text-[#1E4D3B]">Weight (g)</label>
-                  <input type="number" className=" px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" min={0}
+                  <input type="number" className="px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-gray-100 border border-gray-100 text-sm sm:text-base w-full" min={0}
                     value={itemData.weight} onChange={(e) => setItemData({ ...itemData, weight: e.target.value })}
                   />
                 </div>
                 <div className="flex flex-col gap-3 ">
                   <label htmlFor="name" className="text-[#1E4D3B]">Category</label>
-                  <select className="px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" value={itemData.category} onChange={(e) => setItemData({ ...itemData, category: e.target.value as ItemCategory })} defaultValue={"produce"} >
+                  <select className="px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-gray-100 border border-gray-100 text-sm sm:text-base w-full" value={itemData.category} onChange={(e) => setItemData({ ...itemData, category: e.target.value as ItemCategory })} defaultValue={"produce"} >
                     <option value="produce" >Produce</option>
                     <option value="dairy">Dairy</option>
                     <option value="meat">Meat</option>
@@ -157,9 +159,9 @@ export const ItemRow = ({
               </div>
               <div className="w-full">
                 <label htmlFor="name" className="text-[#1E4D3B]">Expirty Date</label>
-                <input type="date" className="mt-2 w-full px-5 py-3 rounded-2xl bg-gray-100 border border-gray-100" value={itemData.expiryDate} onChange={(e) => setItemData({ ...itemData, expiryDate: e.target.value })} />
+                <input type="date" className="mt-2 w-full px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-gray-100 border border-gray-100 text-sm sm:text-base" value={itemData.expiryDate} onChange={(e) => setItemData({ ...itemData, expiryDate: e.target.value })} />
               </div>
-              <button className={`text-white flex items-center justify-center gap-4 ${itemData.name != "" && itemData.weight && itemData.expiryDate ? "bg-[#1E4D3B] cursor-pointer" : "bg-[#A5B9B1]"} rounded-2xl px-5 py-3 font-semibold text-xl`} disabled={itemData.name == "" || itemData.weight == '' || itemData.expiryDate == ''}>
+              <button className={`text-white flex items-center justify-center gap-3 sm:gap-4 ${itemData.name != "" && itemData.weight && itemData.expiryDate ? "bg-[#1E4D3B] cursor-pointer" : "bg-[#A5B9B1]"} rounded-2xl px-5 py-3 font-semibold text-base sm:text-xl`} disabled={itemData.name == "" || itemData.weight == '' || itemData.expiryDate == ''}>
                 <Edit3Icon />
                 <span>Update the fridge</span>
               </button>

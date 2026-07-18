@@ -84,14 +84,14 @@ export default function ItemShareCard({
 
   return (
     <div
-      className={`flex flex-col justify-between p-5 rounded-xl border transition-all duration-200 bg-white ${isClaimed
+      className={`flex flex-col justify-between p-4 sm:p-5 rounded-xl border transition-all duration-200 bg-white ${isClaimed
         ? 'border-slate-200 opacity-60 shadow-none'
         : 'border-slate-200/90 shadow-sm hover:shadow-md hover:border-slate-300'
         }`}
     >
       <div>
         <div className="flex justify-between items-start gap-3 mb-2">
-          <h3 className={`font-bold text-base text-slate-900 tracking-tight leading-snug ${isClaimed ? 'text-slate-400 line-through' : ''}`}>
+          <h3 className={`font-bold text-sm sm:text-base text-slate-900 tracking-tight leading-snug ${isClaimed ? 'text-slate-400 line-through' : ''}`}>
             {item.name}
           </h3>
           <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-100/50 shrink-0">
@@ -127,7 +127,7 @@ export default function ItemShareCard({
         </div>
       </div>
       {isOwner ? (
-        <div className="border-t border-slate-100 bg-slate-50/50 px-4 py-3 flex gap-2">
+        <div className="border-t border-slate-100 bg-slate-50/50 px-3 sm:px-4 py-2.5 sm:py-3 flex gap-2">
           <button
             onClick={() => onEdit && onEdit(item)}
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer"
@@ -170,8 +170,7 @@ export default function ItemShareCard({
         <button
           type="button"
           onClick={() => handleClaimItem(item.id)}
-          className={`w-full py-2.5 px-4 rounded-lg font-semibold text-xs tracking-wide flex items-center justify-center gap-1.5 transition-all cursor-pointer bg-slate-900 hover:bg-slate-800 text-white shadow-sm'
-              }`}
+          className="w-full py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-semibold text-xs sm:text-sm tracking-wide flex items-center justify-center gap-1.5 transition-all cursor-pointer bg-slate-900 hover:bg-slate-800 text-white shadow-sm"
         >
           Claim listing
         </button>

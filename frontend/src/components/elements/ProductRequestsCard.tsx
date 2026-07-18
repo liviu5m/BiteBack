@@ -75,7 +75,7 @@ export default function ProductRequestsCard({
     return (
       <div
         key={request.id}
-        className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all duration-200 ${theme.bg}`}
+        className={`p-3 sm:p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all duration-200 ${theme.bg}`}
       >
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-9 h-9 bg-white rounded-lg shadow-sm border border-gray-100 flex items-center justify-center shrink-0 text-base">
@@ -96,7 +96,7 @@ export default function ProductRequestsCard({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 justify-end shrink-0">
+        <div className="flex flex-wrap items-center gap-2 justify-end shrink-0">
           {status === "pending" && (
             <>
               {isOwner ? (
@@ -182,11 +182,11 @@ export default function ProductRequestsCard({
   };
 
   return (
-    <div className="mx-6 mt-4 flex flex-col gap-3 shrink-0">
+    <div className="mx-2 sm:mx-4 md:mx-6 mt-2 sm:mt-3 md:mt-4 flex flex-col gap-2 sm:gap-3 shrink-0">
 
       {/* Active Scrollable Section */}
       {activeRequests.length > 0 && (
-        <div className="max-h-[190px] overflow-y-auto pr-1 space-y-2 border border-dashed border-gray-200 rounded-xl p-2 bg-gray-50/30 custom-scrollbar">
+        <div className="max-h-[120px] sm:max-h-[140px] md:max-h-[190px] overflow-y-auto pr-1 space-y-2 border border-dashed border-gray-200 rounded-lg sm:rounded-xl p-2 bg-gray-50/30 custom-scrollbar">
           {activeRequests.map(renderRequestCard)}
         </div>
       )}

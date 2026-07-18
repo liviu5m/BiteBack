@@ -144,20 +144,20 @@ export default function ShareWithNeighborsForm({ onClose }: { onClose: () => voi
     addShareItem(finalPayload);
   };
 
-  return isItemsLoading ? <div className='w-full h-full flex items-center justify-center'>
+  return isItemsLoading ? <div className='w-full h-full min-h-[200px] flex items-center justify-center p-4'>
     <SmallLoader />
   </div> : (
-    <div className="w-full flex flex-col font-sans text-left text-slate-800">
+    <div className="w-full flex flex-col font-sans text-left text-slate-800 max-w-full overflow-x-hidden">
 
-      <div className="flex items-start gap-4 mb-5">
-        <div className="w-12 h-12 flex items-center justify-center rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 flex-shrink-0">
+      <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 flex-shrink-0">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
           </svg>
         </div>
         <div>
-          <h2 className="text-2xl font-serif font-bold text-emerald-950 leading-tight">Share with neighbors</h2>
-          <p className="text-sm text-gray-500">List food you won't get to in time</p>
+          <h2 className="text-xl sm:text-2xl font-serif font-bold text-emerald-950 leading-tight">Share with neighbors</h2>
+          <p className="text-xs sm:text-sm text-gray-500">List food you won't get to in time</p>
         </div>
       </div>
 
@@ -204,18 +204,18 @@ export default function ShareWithNeighborsForm({ onClose }: { onClose: () => voi
 
           {isChangingLocation && coordinates && (
             <div className="w-full mt-2 flex flex-col gap-2">
-              <form onSubmit={handleSearchAddress} className="flex gap-1.5 items-center w-full">
+              <form onSubmit={handleSearchAddress} className="flex flex-col sm:flex-row gap-1.5 items-stretch sm:items-center w-full">
                 <input
                   type="text"
                   placeholder="Search city, street, or zip code..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-emerald-700 bg-white"
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-emerald-700 bg-white min-w-0"
                 />
                 <button
                   type="submit"
                   disabled={searchLoading}
-                  className="bg-emerald-800 text-white font-semibold px-3 py-2 rounded-lg hover:bg-emerald-950 transition-colors disabled:bg-emerald-800/40"
+                  className="bg-emerald-800 text-white font-semibold px-3 py-2 rounded-lg hover:bg-emerald-950 transition-colors disabled:bg-emerald-800/40 w-full sm:w-auto shrink-0"
                 >
                   {searchLoading ? 'Searching...' : 'Search'}
                 </button>
@@ -225,7 +225,7 @@ export default function ShareWithNeighborsForm({ onClose }: { onClose: () => voi
 
               <p className="text-stone-400 font-medium my-0.5">👉 Or click directly on the map to pinpoint a position:</p>
 
-              <div className="h-[200px] w-full rounded-xl overflow-hidden border border-gray-200 shadow-inner">
+              <div className="h-[160px] sm:h-[200px] w-full rounded-xl overflow-hidden border border-gray-200 shadow-inner">
                 <MapContainer
                   center={[coordinates.lat, coordinates.lng]}
                   zoom={13}
@@ -247,12 +247,12 @@ export default function ShareWithNeighborsForm({ onClose }: { onClose: () => voi
       </div>
 
       {activeTab === 'fridge' ? (
-        <div className="flex flex-col gap-3 max-h-[260px] overflow-y-auto pr-1 mb-5">
+        <div className="flex flex-col gap-3 max-h-[200px] sm:max-h-[260px] overflow-y-auto pr-1 mb-4 sm:mb-5">
           {items.map((item) => (
             <div
               key={item.id}
               onClick={() => setSelectedFridgeItem(item.id)}
-              className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${selectedFridgeItem === item.id
+              className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border cursor-pointer transition-all ${selectedFridgeItem === item.id
                 ? 'border-emerald-700 bg-emerald-50/40 ring-1 ring-emerald-700'
                 : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}

@@ -86,25 +86,25 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, recipes }) => {
   }
 
   return (
-    <div className=" flex flex-col md:flex-row max-w-3xl bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden font-sans">
+    <div className="flex flex-col md:flex-row w-full max-w-3xl bg-white rounded-xl sm:rounded-2xl md:rounded-3xl border border-gray-100 shadow-sm overflow-hidden font-sans">
 
-      <div className="relative w-full md:w-[40%] min-h-[240px] md:min-h-full bg-gray-100">
+      <div className="relative w-full md:w-[38%] lg:w-[40%] min-h-[160px] sm:min-h-[200px] md:min-h-[240px] lg:min-h-full bg-gray-100 shrink-0">
         <img
           src={recipe.image_url || "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&q=80&w=600"}
           alt={recipe.recipe_name}
           className="w-full h-full object-cover"
         />
-        <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-md text-[#4ade80] font-semibold text-xs px-3 py-1.5 rounded-full">
+        <div className="absolute top-3 sm:top-4 left-3 sm:left-4 bg-black/40 backdrop-blur-md text-[#4ade80] font-semibold text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-full">
           {recipe.match_percentage}% Match
         </div>
       </div>
-      <div className="flex-1 p-6 md:p-8 flex flex-col justify-between">
+      <div className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 flex flex-col justify-between min-w-0">
         <div>
-          <h2 className="text-2xl font-bold text-[#113a2B] tracking-tight mb-2">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#113a2B] tracking-tight mb-1.5 sm:mb-2 break-words">
             {recipe.recipe_name}
           </h2>
 
-          <div className="flex items-center gap-3 text-sm text-gray-400 mb-4 font-medium">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-400 mb-4 font-medium">
             <div className="flex items-center gap-1">
               <Clock size={16} className="text-gray-400" />
               <span>{recipe.prep_time_minutes} min</span>
@@ -140,9 +140,9 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, recipes }) => {
               <h4 className="text-xs font-bold text-gray-400 tracking-wider uppercase mb-2">
                 Missing
               </h4>
-              <div className='flex gap-2'>
+              <div className='flex flex-col sm:flex-row flex-wrap gap-2'>
                 {recipe.missing_ingredients.map((ing, idx) => (
-                  <div key={idx} className="inline-flex items-start gap-2 bg-gray-50 border border-gray-200 rounded-xl p-2.5 max-w-xs">
+                  <div key={idx} className="inline-flex items-start gap-2 bg-gray-50 border border-gray-200 rounded-xl p-2 sm:p-2.5 w-full sm:max-w-xs">
                     <AlertCircle size={18} className="text-gray-400 mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="text-sm font-semibold text-gray-700">{ing.name}</p>
@@ -165,8 +165,8 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, recipes }) => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <button className={`p-2.5 ${saved ? "bg-[#1b4332] text-white hover:bg-[#143225]" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"} border cursor-pointer border-gray-200 rounded-xl  transition-all`}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 border-t border-gray-100">
+          <button className={`p-2.5 self-start sm:self-auto ${saved ? "bg-[#1b4332] text-white hover:bg-[#143225]" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"} border cursor-pointer border-gray-200 rounded-xl  transition-all`}
             onClick={() => {
               if (!saved) saveRecipe()
               else deleteRecipe(saved.id)
@@ -178,7 +178,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, recipes }) => {
             onClick={() => {
               cookFood()
             }}
-            className="cursor-pointer bg-[#1b4332] hover:bg-[#143225] text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all shadow-sm"
+            className="cursor-pointer bg-[#1b4332] hover:bg-[#143225] text-white font-semibold text-sm px-4 sm:px-5 py-2.5 rounded-xl transition-all shadow-sm w-full sm:w-auto text-center"
           >
             Mark as Cooked
           </button>

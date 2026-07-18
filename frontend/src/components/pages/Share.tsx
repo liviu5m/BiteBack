@@ -27,13 +27,13 @@ const Share = () => {
 
   return (
     <BodyLayout>
-      <div className="min-h-screen w-[calc(100vw-350px)] p-10">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-emerald-900 text-4xl font-bold mt-5">Community Share</h1>
-            <p className="text-lg text-gray-600">Rescue food from neighbors nearby.</p>
+      <div className="min-h-screen w-full lg:w-[calc(100vw-350px)] p-3 sm:p-4 md:p-6 lg:p-10 max-w-full overflow-x-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 md:gap-6">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-emerald-900 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mt-1 sm:mt-2 md:mt-5">Community Share</h1>
+            <p className="text-sm sm:text-base md:text-lg text-gray-600 mt-0.5 sm:mt-1">Rescue food from neighbors nearby.</p>
           </div>
-          <button className="bg-emerald-900 text-white font-semibold px-5 py-3 rounded-xl flex items-center justify-center gap-3 cursor-pointer hover:bg-emerald-800" onClick={() => setListItemModal(true)}>
+          <button className="bg-emerald-900 text-white font-semibold px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl flex items-center justify-center gap-2 sm:gap-3 cursor-pointer hover:bg-emerald-800 w-full sm:w-auto shrink-0 text-sm sm:text-base" onClick={() => setListItemModal(true)}>
             <Plus />
             <span>List Item</span>
           </button>

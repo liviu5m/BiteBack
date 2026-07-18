@@ -212,7 +212,7 @@ export default function ChatContainer() {
 
   if (loadingRooms) {
     return (
-      <div className="flex items-center justify-center h-screen text-gray-500 font-semibold">
+      <div className="flex items-center justify-center min-h-screen h-[100dvh] sm:h-screen lg:h-screen text-gray-500 font-semibold px-3 sm:px-4 text-center text-sm sm:text-base">
         Loading your Inbox...
       </div>
     );
@@ -220,12 +220,12 @@ export default function ChatContainer() {
 
   return (
     <BodyLayout>
-      <div className="flex w-[calc(100vw-350px)] h-screen bg-white border border-gray-100 overflow-hidden shadow-sm">
+      <div className="flex flex-col lg:flex-row w-full lg:w-[calc(100vw-350px)] h-[calc(100dvh-72px)] sm:h-[calc(100vh-72px)] lg:h-screen bg-white border border-gray-100 overflow-hidden shadow-sm max-w-full">
 
-        <section className="w-80 border-r border-gray-100 flex flex-col shrink-0">
-          <div className="p-5 border-b border-gray-100">
-            <h1 className="text-xl font-bold text-gray-900">Inbox</h1>
-            <p className="text-xs text-gray-400 mt-1">Coordinate food share collections</p>
+        <section className="w-full lg:w-72 xl:w-80 max-h-[30vh] sm:max-h-[35vh] lg:max-h-none border-b lg:border-b-0 lg:border-r border-gray-100 flex flex-col shrink-0">
+          <div className="p-3 sm:p-4 md:p-5 border-b border-gray-100">
+            <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-900">Inbox</h1>
+            <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1">Coordinate food share collections</p>
           </div>
 
           <div className="flex-1 overflow-y-auto divide-y divide-gray-50">
@@ -236,10 +236,10 @@ export default function ChatContainer() {
                 <button
                   key={chat.id}
                   onClick={() => setActiveChat(chat)}
-                  className={`w-full p-4 flex gap-3 cursor-pointer text-left transition-colors hover:bg-gray-50/70 ${activeChat?.id === chat.id ? "bg-[#F0F5F2]" : ""
+                  className={`w-full p-2.5 sm:p-3 md:p-4 flex gap-2 sm:gap-3 cursor-pointer text-left transition-colors hover:bg-gray-50/70 ${activeChat?.id === chat.id ? "bg-[#F0F5F2]" : ""
                     }`}
                 >
-                  <div className="w-11 h-11 rounded-full bg-[#D1E5DC] text-[#0A4C38] flex items-center justify-center font-bold text-sm shrink-0 relative">
+                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[#D1E5DC] text-[#0A4C38] flex items-center justify-center font-bold text-xs sm:text-sm shrink-0 relative">
                     {chat.user_one_id === user?.id ? "O" : "R"}
 
                     {/* Subtle dot on the avatar ring if there are unreads */}
@@ -274,11 +274,11 @@ export default function ChatContainer() {
           </div>
         </section>
 
-        <section className="flex-1 flex flex-col bg-[#F9FAFA]">
+        <section className="flex-1 flex flex-col bg-[#F9FAFA] min-h-0 min-w-0">
           {activeChat ? (
             <>
-              <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between shrink-0">
-                <h3 className="font-bold text-gray-950 text-base">
+              <header className="bg-white border-b border-gray-100 px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-4 flex items-center justify-between shrink-0">
+                <h3 className="font-bold text-gray-950 text-xs sm:text-sm md:text-base truncate">
                   Active Discussion (
                   {activeChat.user_one_username === user?.username
                     ? activeChat.user_two_username
@@ -287,14 +287,14 @@ export default function ChatContainer() {
                 </h3>
               </header>
 
-              <div className="bg-[#E6F2ED] border-b border-[#D1E5DC] px-6 py-2.5 text-center text-xs text-[#0A4C38] font-medium flex items-center justify-center gap-2">
-                <svg className="w-4 h-4 text-[#0A4C38]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="bg-[#E6F2ED] border-b border-[#D1E5DC] px-2 sm:px-3 md:px-6 py-2 sm:py-2.5 text-center text-[9px] sm:text-[10px] md:text-xs text-[#0A4C38] font-medium flex items-center justify-center gap-1 sm:gap-1.5 md:gap-2">
+                <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-[#0A4C38] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
                 Connection Secure. Coordinate your pickup safely.
               </div>
               <ProductRequestsCard productRequests={productRequests} currentUserId={user?.id} onUpdateStatus={updateRequestStatus} deleteRequest={deleteRequest} />
-              <div className="flex-1 overflow-y-auto p-6 space-y-4"
+              <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4"
                 ref={containerRef}
                 onScroll={handleScroll}
               >
@@ -325,14 +325,14 @@ export default function ChatContainer() {
                         )}
 
                         <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                          <div className="max-w-[70%]">
+                          <div className="max-w-[90%] sm:max-w-[85%] md:max-w-[70%]">
                             <div
-                              className={`p-4 rounded-2xl shadow-sm ${isMe
+                              className={`p-2.5 sm:p-3 md:p-4 rounded-xl sm:rounded-2xl shadow-sm ${isMe
                                 ? "bg-[#0A4C38] text-white rounded-tr-none"
                                 : "bg-white text-gray-800 border border-gray-100 rounded-tl-none"
                                 }`}
                             >
-                              <p className="text-sm leading-relaxed">{msg.text}</p>
+                              <p className="text-xs sm:text-sm leading-relaxed break-words">{msg.text}</p>
                             </div>
                             <span className={`text-[10px] text-gray-400 block mt-1 ${isMe ? "text-right" : "text-left"}`}>
                               {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -345,24 +345,24 @@ export default function ChatContainer() {
                 )}
               </div>
 
-              <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-gray-100 shrink-0 flex gap-3">
+              <form onSubmit={handleSendMessage} className="p-2.5 sm:p-3 md:p-4 bg-white border-t border-gray-100 shrink-0 flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <input
                   type="text"
                   placeholder="Type your reply here..."
                   value={typedMessage}
                   onChange={(e) => setTypedMessage(e.target.value)}
-                  className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none text-sm"
+                  className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl focus:outline-none text-xs sm:text-sm min-w-0"
                 />
                 <button
                   type="submit"
-                  className="bg-[#111E30] hover:bg-[#1a2e4a] text-white font-semibold px-6 py-3 rounded-xl text-sm transition-all"
+                  className="bg-[#111E30] hover:bg-[#1a2e4a] text-white font-semibold px-4 sm:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm transition-all w-full sm:w-auto shrink-0"
                 >
                   Send
                 </button>
               </form>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-gray-400">
+            <div className="flex-1 flex items-center justify-center text-gray-400 text-sm sm:text-base px-4 text-center">
               Select a conversation to start chatting!
             </div>
           )}
