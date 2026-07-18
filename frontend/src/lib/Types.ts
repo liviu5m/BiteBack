@@ -80,6 +80,7 @@ export type ProductRequestData = {
   userId: number;
   itemId: number;
   ownerId: number;
+  itemName: string;
 }
 
 export type ChatRoom = {

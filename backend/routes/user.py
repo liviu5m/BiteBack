@@ -33,3 +33,10 @@ def getAuthUser(request: Request, session: SessionDep):
         "name": user.name,
         "createdAt": user.createdAt,
     }
+
+
+def getUserById(userId: int, session: SessionDep):
+    user = session.get(User, userId)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user

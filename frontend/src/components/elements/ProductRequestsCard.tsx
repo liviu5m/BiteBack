@@ -1,15 +1,18 @@
+import { deleteProductRequestFunc } from "@/api/productRequest";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 export default function ProductRequestsCard({
   productRequests = [],
   currentUserId,
-  onUpdateStatus
+  onUpdateStatus,
+  deleteRequest
 }) {
+  const queryClient = useQueryClient();
   const [showCompleted, setShowCompleted] = useState(false);
 
-  if (!productRequests || productRequests.length === 0) return null;
 
-  // Split your active items and resolved items into two arrays
   const activeRequests = productRequests.filter(
     (r) => r.status !== "completed" && r.status !== "rejected" && r.status !== "cancelled"
   );
@@ -18,6 +21,7 @@ export default function ProductRequestsCard({
     (r) => r.status === "completed" || r.status === "rejected" || r.status === "cancelled"
   );
 
+  if (!productRequests || productRequests.length === 0) return null;
   const statusThemes = {
     pending: {
       bg: "bg-amber-50 border-amber-200",
@@ -57,14 +61,16 @@ export default function ProductRequestsCard({
   };
 
   const renderRequestCard = (request) => {
+
     const isOwner = request.owner_id === currentUserId;
     const status = request.status;
     const theme = statusThemes[status] || statusThemes.pending;
 
-    // Dynamically adjust subtext variations if they are a requester
     let displaySubtext = theme.subtext;
     if (!isOwner && status === "pending") displaySubtext = "Waiting for the owner to accept your request.";
     if (!isOwner && status === "accepted") displaySubtext = "Request approved! Coordinate collection with the owner.";
+
+
 
     return (
       <div
@@ -91,19 +97,18 @@ export default function ProductRequestsCard({
         </div>
 
         <div className="flex items-center gap-2 justify-end shrink-0">
-          {/* STATUS: PENDING */}
           {status === "pending" && (
             <>
               {isOwner ? (
                 <>
                   <button
-                    onClick={() => onUpdateStatus({ id: request.id, status: "REJECTED" })}
+                    onClick={() => deleteRequest({ id: request.id, shareItemId: request.share_item_id, requesterId: request.requester_id })}
                     className="px-2.5 py-1.5 text-xs font-semibold text-rose-700 bg-white hover:bg-rose-50 border border-rose-200 rounded-lg transition-colors cursor-pointer"
                   >
                     Decline
                   </button>
                   <button
-                    onClick={() => onUpdateStatus({ id: request.id, status: "ACCEPTED" })}
+                    onClick={() => onUpdateStatus({ id: request.id, status: "ACCEPTED", shareItemId: request.share_item_id, requesterId: request.requester_id })}
                     className="px-3 py-1.5 text-xs font-semibold text-white bg-[#0A4C38] hover:bg-[#083b2b] rounded-lg shadow-sm transition-colors cursor-pointer"
                   >
                     Accept
@@ -117,19 +122,18 @@ export default function ProductRequestsCard({
             </>
           )}
 
-          {/* STATUS: ACCEPTED */}
           {status === "accepted" && (
             <>
               {isOwner ? (
                 <>
                   <button
-                    onClick={() => onUpdateStatus({ id: request.id, status: "PENDING" })}
+                    onClick={() => onUpdateStatus({ id: request.id, status: "PENDING", shareItemId: request.share_item_id, requesterId: request.requester_id })}
                     className="px-2.5 py-1.5 text-xs font-semibold text-amber-700 bg-white hover:bg-amber-50 border border-amber-200 rounded-lg transition-colors cursor-pointer"
                   >
                     Send Back
                   </button>
                   <button
-                    onClick={() => onUpdateStatus({ id: request.id, status: "COMPLETED" })}
+                    onClick={() => onUpdateStatus({ id: request.id, status: "COMPLETED", shareItemId: request.share_item_id, requesterId: request.requester_id })}
                     className="px-3 py-1.5 text-xs font-semibold text-white bg-[#0A4C38] hover:bg-[#083b2b] rounded-lg shadow-sm transition-colors cursor-pointer"
                   >
                     Confirm Handover
@@ -143,7 +147,6 @@ export default function ProductRequestsCard({
             </>
           )}
 
-          {/* STATUS: COMPLETED */}
           {status === "completed" && (
             <div className="flex items-center gap-2">
               <span className="text-xs text-emerald-700 font-semibold bg-emerald-100/50 px-2.5 py-1.5 rounded-lg border border-emerald-100 flex items-center gap-1">
@@ -151,7 +154,7 @@ export default function ProductRequestsCard({
               </span>
               {isOwner && (
                 <button
-                  onClick={() => onUpdateStatus({ id: request.id, status: "PENDING" })}
+                  onClick={() => onUpdateStatus({ id: request.id, status: "PENDING", shareItemId: request.share_item_id, requesterId: request.requester_id })}
                   className="px-2.5 py-1.5 text-[11px] font-medium text-amber-700 bg-white hover:bg-amber-50 border border-amber-200 rounded-lg transition-colors cursor-pointer"
                 >
                   Undo
@@ -174,7 +177,7 @@ export default function ProductRequestsCard({
             </span>
           )}
         </div>
-      </div>
+      </div >
     );
   };
 

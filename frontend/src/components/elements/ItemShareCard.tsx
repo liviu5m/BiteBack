@@ -61,7 +61,7 @@ export default function ItemShareCard({
 
   const { mutate: createProductRequest } = useMutation({
     mutationKey: ['create-product-request'],
-    mutationFn: (data: ProductRequestData) => createProductRequestFunc(data.itemId, data.userId, data.ownerId),
+    mutationFn: (data: ProductRequestData) => createProductRequestFunc(data.itemId, data.userId, data.ownerId, data.itemName),
     onSuccess: async (data) => {
       console.log(data);
       toast("Request sent successfully")
@@ -75,7 +75,7 @@ export default function ItemShareCard({
   })
 
   const handleClaimItem = (id: string) => {
-    createProductRequest({ userId: user.id, itemId: Number(id), ownerId: item.owner_id });
+    createProductRequest({ userId: user.id, itemId: Number(id), ownerId: item.owner_id, itemName: item.name });
   };
 
   useEffect(() => {

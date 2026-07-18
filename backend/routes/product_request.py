@@ -1,12 +1,15 @@
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlmodel import and_, or_, select
 
+from brevo_email import sendBrevoEmail
 from database import SessionDep
-from models import ChatRoom, ProductRequest, RequestStatus, ShareItem
+from models import ChatRoom, ProductRequest, RequestStatus, ShareItem, User
 from routes.chat_room import checkChatRoom
+from routes.share_item import getShareItemById
+from routes.user import getUserById
 from utils import verifyUserTokenSession
 
 app = APIRouter(
@@ -18,6 +21,7 @@ class ProductRequestData(BaseModel):
     user_id: int
     item_id: int
     owner_id: int
+    item_name: str
 
 
 @app.post("/")
@@ -41,6 +45,13 @@ def createProductRequest(
         requester_id=user["userId"],
         status=RequestStatus.PENDING,
         owner_id=data.owner_id,
+    )
+
+    sendBrevoEmail(
+        email=user["email"],
+        name=user["name"],
+        status=RequestStatus.PENDING,
+        item_name=data.item_name,
     )
     session.add(new_request)
     session.commit()
@@ -75,6 +86,8 @@ def getProductRequestsByOwnerId(
 
 class ProductRequestDetails(BaseModel):
     status: str
+    share_item_id: int
+    requester_id: int
 
 
 @app.put("/{id}")
@@ -91,27 +104,73 @@ def updateProductRequest(
         raise HTTPException(
             status_code=403, detail="You are not authorized to update this request"
         )
-    print(RequestStatus.__members__)
+
     if data.status not in RequestStatus.__members__:
         raise HTTPException(status_code=400, detail="Invalid status")
+
+    share_item = getShareItemById(data.share_item_id, session)
+    requester = getUserById(data.requester_id, session)
+    is_reverted = (
+        request.status == RequestStatus.ACCEPTED
+        and RequestStatus[data.status] == RequestStatus.PENDING
+    ) or (
+        request.status == RequestStatus.COMPLETED
+        and RequestStatus[data.status] == RequestStatus.PENDING
+    )
+    print("--- DEBUG EMAIL STATUS ---", flush=True)
+    print(
+        f"Current DB Status (request.status): {request.status} (Type: {type(request.status)})",
+        flush=True,
+    )
+    print(
+        f"Incoming New Status (data.status): {data.status} (Type: {type(data.status)})",
+        flush=True,
+    )
+    print(f"Calculated is_reverted value: {is_reverted}", flush=True)
+    print("--------------------------", flush=True)
+    sendBrevoEmail(
+        email=requester.email,
+        name=requester.name,
+        status=RequestStatus[data.status],
+        item_name=share_item.name,
+        is_reverted=is_reverted,
+    )
     request.status = RequestStatus[data.status]
     session.commit()
+
     return request
 
 
-@app.delete("/{id}")
+@app.delete(path="/{id}")
 def deleteProductRequest(
     id: int,
     session: SessionDep,
-    user: dict[Any, Any] = Depends(verifyUserTokenSession),
-):
-    request = session.get(ProductRequest, id)
+    share_item_id: Optional[int] = None,
+    requester_id: Optional[int] = None,
+    user: dict[Any, Any] = Depends(dependency=verifyUserTokenSession),
+) -> ProductRequest:
+    request: ProductRequest | None = session.get(entity=ProductRequest, ident=id)
     if not request:
         raise HTTPException(status_code=404, detail="Request not found")
+
     if request.requester_id != user["userId"] and request.owner_id != user["userId"]:
         raise HTTPException(
             status_code=403, detail="You are not authorized to delete this request"
         )
-    session.delete(request)
+
+    session.delete(instance=request)
     session.commit()
+
+    if share_item_id is not None and requester_id is not None:
+        share_item: ShareItem = getShareItemById(item_id=share_item_id, session=session)
+        requester: User = getUserById(userId=requester_id, session=session)
+
+        sendBrevoEmail(
+            email=requester.email,
+            name=requester.name,
+            status=request.status,
+            item_name=share_item.name,
+            is_declined=True,
+        )
+
     return request

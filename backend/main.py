@@ -16,8 +16,6 @@ from routes.chat_room import app as chatRoomRouter
 from routes.product_request import app as productRequestRouter
 
 app = FastAPI()
-load_dotenv()
-
 SECRET_KEY = os.getenv("SECRET_KEY", "secret")
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 app.add_middleware(

@@ -3,7 +3,7 @@ import { useAppContext } from "@/lib/AppProvider";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import BodyLayout from "../layouts/BodyLayout";
-import { getProductRequestsByOwnerIdFunc, updateProductRequestFunc } from "@/api/productRequest";
+import { deleteProductRequestFunc, getProductRequestsByOwnerIdFunc, updateProductRequestFunc } from "@/api/productRequest";
 import ProductRequestsCard from "@/components/elements/ProductRequestsCard";
 import { toast } from "react-toastify";
 
@@ -62,7 +62,7 @@ export default function ChatContainer() {
 
   const { mutate: updateRequestStatus } = useMutation({
     mutationKey: ['update-product-request'],
-    mutationFn: (data: { id: number, status: string }) => updateProductRequestFunc(data.id, data.status),
+    mutationFn: (data: { id: number, status: string, shareItemId: number, requesterId: number }) => updateProductRequestFunc(data.id, data.status, data.shareItemId, data.requesterId),
     onSuccess: async (data) => {
       console.log(data);
       toast("Request status updated successfully")
@@ -82,6 +82,19 @@ export default function ChatContainer() {
     }
   })
 
+  const { mutate: deleteRequest } = useMutation({
+    mutationKey: ['delete-product-request'],
+    mutationFn: (data: { id: number, shareItemId: number, requesterId: number }) => deleteProductRequestFunc(data.id, data.shareItemId, data.requesterId),
+    onSuccess: (data) => {
+      console.log(data);
+      toast("Request declined successfully")
+      queryClient.invalidateQueries({ queryKey: ["product-requests"] });
+    },
+    onError: (err) => {
+      console.log(err);
+      toast("Error deleting request")
+    }
+  })
 
   useEffect(() => {
     if (chats && chats.length > 0 && !activeChat) {
@@ -280,7 +293,7 @@ export default function ChatContainer() {
                 </svg>
                 Connection Secure. Coordinate your pickup safely.
               </div>
-              <ProductRequestsCard productRequests={productRequests} currentUserId={user?.id} onUpdateStatus={updateRequestStatus} />
+              <ProductRequestsCard productRequests={productRequests} currentUserId={user?.id} onUpdateStatus={updateRequestStatus} deleteRequest={deleteRequest} />
               <div className="flex-1 overflow-y-auto p-6 space-y-4"
                 ref={containerRef}
                 onScroll={handleScroll}

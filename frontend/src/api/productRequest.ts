@@ -2,11 +2,12 @@ import axios from "axios";
 
 const baseUrl = import.meta.env.VITE_API_URL;
 
-export async function createProductRequestFunc(itemId: number, userId: number, ownerId: number) {
+export async function createProductRequestFunc(itemId: number, userId: number, ownerId: number, itemName: string) {
   const response = await axios.post(`${baseUrl}/api/product-request`, {
     item_id: itemId,
     user_id: userId,
-    owner_id: ownerId
+    owner_id: ownerId,
+    item_name: itemName
   }, {
     withCredentials: true
   });
@@ -23,18 +24,24 @@ export async function getProductRequestsByOwnerIdFunc(userId: number, requesterI
   return response.data;
 }
 
-export async function updateProductRequestFunc(id: number, status: string) {
+export async function updateProductRequestFunc(id: number, status: string, shareItemId: number, requesterId: number) {
 
   const response = await axios.put(`${baseUrl}/api/product-request/${id}`, {
-    status: status
+    status: status,
+    share_item_id: shareItemId,
+    requester_id: requesterId
   }, {
     withCredentials: true
   });
   return response.data;
 }
 
-export async function deleteProductRequestFunc(id: number) {
+export async function deleteProductRequestFunc(id: number, shareItemId: number, requesterId: number) {
   const response = await axios.delete(`${baseUrl}/api/product-request/${id}`, {
+    params: {
+      share_item_id: shareItemId,
+      requester_id: requesterId
+    },
     withCredentials: true
   });
   return response.data;

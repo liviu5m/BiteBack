@@ -203,3 +203,10 @@ def delete_share_item(
     session.delete(db_item)
     session.commit()
     return {"message": "Item deleted successfully", "id": item_id}
+
+
+def getShareItemById(item_id: int, session: SessionDep):
+    db_item = session.get(ShareItem, item_id)
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_item
