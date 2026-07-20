@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 from sqlmodel import and_, or_, select
 
@@ -28,6 +28,7 @@ class ProductRequestData(BaseModel):
 def createProductRequest(
     data: ProductRequestData,
     session: SessionDep,
+    background_tasks: BackgroundTasks,
     user: dict[Any, Any] = Depends(verifyUserTokenSession),
 ):
     checkChatRoom(data.owner_id, session, user)
@@ -46,13 +47,19 @@ def createProductRequest(
         status=RequestStatus.PENDING,
         owner_id=data.owner_id,
     )
-
-    sendBrevoEmail(
+    background_tasks.add_task(
+        sendBrevoEmail,
         email=user["email"],
         name=user["name"],
         status=RequestStatus.PENDING,
         item_name=data.item_name,
     )
+    # sendBrevoEmail(
+    #     email=user["email"],
+    #     name=user["name"],
+    #     status=RequestStatus.PENDING,
+    #     item_name=data.item_name,
+    # )
     session.add(new_request)
     session.commit()
     session.refresh(new_request)
@@ -94,6 +101,7 @@ class ProductRequestDetails(BaseModel):
 def updateProductRequest(
     id: int,
     data: ProductRequestDetails,
+    background_tasks: BackgroundTasks,
     session: SessionDep,
     user: dict[Any, Any] = Depends(verifyUserTokenSession),
 ):
@@ -117,24 +125,21 @@ def updateProductRequest(
         request.status == RequestStatus.COMPLETED
         and RequestStatus[data.status] == RequestStatus.PENDING
     )
-    print("--- DEBUG EMAIL STATUS ---", flush=True)
-    print(
-        f"Current DB Status (request.status): {request.status} (Type: {type(request.status)})",
-        flush=True,
-    )
-    print(
-        f"Incoming New Status (data.status): {data.status} (Type: {type(data.status)})",
-        flush=True,
-    )
-    print(f"Calculated is_reverted value: {is_reverted}", flush=True)
-    print("--------------------------", flush=True)
-    sendBrevoEmail(
+    background_tasks.add_task(
+        sendBrevoEmail,
         email=requester.email,
         name=requester.name,
         status=RequestStatus[data.status],
         item_name=share_item.name,
         is_reverted=is_reverted,
     )
+    # sendBrevoEmail(
+    #     email=requester.email,
+    #     name=requester.name,
+    #     status=RequestStatus[data.status],
+    #     item_name=share_item.name,
+    #     is_reverted=is_reverted,
+    # )
     request.status = RequestStatus[data.status]
     session.commit()
 
@@ -145,6 +150,7 @@ def updateProductRequest(
 def deleteProductRequest(
     id: int,
     session: SessionDep,
+    background_tasks: BackgroundTasks,
     share_item_id: Optional[int] = None,
     requester_id: Optional[int] = None,
     user: dict[Any, Any] = Depends(dependency=verifyUserTokenSession),
@@ -164,13 +170,20 @@ def deleteProductRequest(
     if share_item_id is not None and requester_id is not None:
         share_item: ShareItem = getShareItemById(item_id=share_item_id, session=session)
         requester: User = getUserById(userId=requester_id, session=session)
-
-        sendBrevoEmail(
+        background_tasks.add_task(
+            sendBrevoEmail,
             email=requester.email,
             name=requester.name,
             status=request.status,
             item_name=share_item.name,
             is_declined=True,
         )
+        # sendBrevoEmail(
+        #     email=requester.email,
+        #     name=requester.name,
+        #     status=request.status,
+        #     item_name=share_item.name,
+        #     is_declined=True,
+        # )
 
     return request

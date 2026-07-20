@@ -104,9 +104,8 @@ export default function ChatContainer() {
 
   useEffect(() => {
     if (!activeChat?.id || !user?.id) return;
-
     const baseUrl = import.meta.env.VITE_WS_API_URL || "localhost:8000";
-    const wsUrl = `ws://${baseUrl}/api/chat-room/ws/${activeChat.id}/${user.id}`;
+    const wsUrl = `wss://${baseUrl}/api/chat-room/ws/${activeChat.id}/${user.id}`;
     const ws = new WebSocket(wsUrl);
     socketRef.current = ws;
 

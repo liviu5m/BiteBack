@@ -5,6 +5,7 @@ from models import Item
 import os
 import httpx
 from google import genai
+from json_repair import repair_json
 
 load_dotenv()
 PIXABAY_API_KEY = os.getenv("PIXABAY_KEY")
@@ -78,6 +79,7 @@ SCHEMA TYPE:
     "preservation_tip": "string"
   }}
 ]
+You are a machine. Respond ONLY with a valid JSON array. Do not include markdown tags, whitespace formatting, or conversational text. If you fail, the system crashes.
 """
     # recipes = getGoogleAIResult(content)
     recipes = getAIResult(content)
@@ -99,22 +101,25 @@ def getAIResult(content: str):
         temperature=1,
         max_completion_tokens=2500,
         top_p=1,
-        stream=True,
+        response_format={"type": "json_object"},
+        stream=False,  # Correct
         stop=None,
     )
 
-    full_response = ""
-    for chunk in completion:
-        if chunk.choices[0].delta.content:
-            full_response += chunk.choices[0].delta.content
-    print(full_response)
-    cleaned_json = full_response.strip()
-    if cleaned_json.startswith("```json"):
-        cleaned_json = cleaned_json.split("```json")[1].split("```")[0].strip()
-    elif cleaned_json.startswith("```"):
-        cleaned_json = cleaned_json.split("```")[1].split("```")[0].strip()
+    full_response = completion.choices[0].message.content
 
-    return json.loads(cleaned_json)
+    print(full_response)
+
+    repaired_json = repair_json(full_response)
+
+    data = json.loads(repaired_json)
+    if isinstance(data, dict):
+        if "recipes" in data:
+            return data["recipes"]
+        if "data" in data:
+            return data["data"]
+        return list(data.values()) if len(data.values()) == 1 else [data]
+    return data
 
 
 def getGoogleAIResult(content: str):
@@ -122,5 +127,8 @@ def getGoogleAIResult(content: str):
     response = googleClient.models.generate_content(
         model="gemini-3.5-flash",
         contents=content,
+        config={
+            "response_mime_type": "application/json",
+        },
     )
     return json.loads(response.text)

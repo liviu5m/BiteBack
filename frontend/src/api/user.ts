@@ -50,3 +50,12 @@ export async function logoutUser() {
   })
   return response.data;
 }
+
+export async function setSessionFunc(token: string) {
+  const response = await axios.post(`${baseUrl}/auth/set-session`, {
+    token,
+  }, {
+    withCredentials: true
+  })
+  return response.data;
+}

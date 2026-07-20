@@ -26,13 +26,13 @@ oauth.register(
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     client_kwargs={"scope": "openid email profile"},
 )
-
+BACKEND_URL = os.getenv("BACKEND_URL", "")
 REACT_DASHBOARD_URL = os.getenv("REACT_DASHBOARD_URL")
 
 
 @app.get("/google/login")
 async def loginGoogle(request: Request):
-    redirect_uri = "http://localhost:8000/auth/google/callback"
+    redirect_uri = BACKEND_URL + "/auth/google/callback"
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
@@ -78,16 +78,17 @@ async def callback(request: Request, session: SessionDep):
             "name": user.name,
         }
     )
-
-    response = RedirectResponse(url=REACT_DASHBOARD_URL)
-    response.set_cookie(
-        key="jwt",
-        value=token_jwt,
-        httponly=True,
-        # secure=True,  # Set to True if testing over production HTTPS
-        samesite="lax",
-        max_age=60 * 60 * 24,
-    )
+    redirect_url = f"{REACT_DASHBOARD_URL}?token={token_jwt}"
+    response = RedirectResponse(url=redirect_url)
+    # response.set_cookie(
+    #     key="jwt",
+    #     value=token_jwt,
+    #     httponly=True,
+    #     secure=True,
+    #     samesite="none",
+    #     max_age=60 * 60 * 24,
+    #     path="/",
+    # )
     return response
 
 
@@ -260,9 +261,10 @@ def login(data: LoginData, response: Response, session: SessionDep):
             key="jwt",
             value=jwt,
             httponly=True,
-            # secure=False,
-            samesite="lax",
+            secure=True,
+            samesite="none",
             max_age=60 * 60 * 24,
+            path="/",
         )
         return "Successfully logged in"
     raise HTTPException(status_code=400, detail="Wrong credentials")
@@ -270,5 +272,37 @@ def login(data: LoginData, response: Response, session: SessionDep):
 
 @app.post("/logout")
 def logout(response: Response):
-    response.delete_cookie("jwt")
+    response.delete_cookie(
+        key="jwt",
+        secure=True,
+        path="/",
+        samesite="none",
+    )
+    response.set_cookie(
+        key="jwt",
+        value="",
+        expires="Thu, 01 Jan 1970 00:00:00 GMT",
+        max_age=-1,
+        path="/",
+        secure=True,
+        samesite="none",
+    )
     return {"message": "Logged out successfully"}
+
+
+@app.post("/set-session")
+def set_session(data: dict, response: Response):
+    token = data.get("token")
+    if not token:
+        raise HTTPException(status_code=400, detail="No token provided")
+
+    response.set_cookie(
+        key="jwt",
+        value=token,
+        httponly=True,
+        secure=True,  # Must be True for cross-origin/HTTPS
+        samesite="none",  # Must be 'none' for cross-origin
+        max_age=60 * 60 * 24,
+        path="/",
+    )
+    return {"message": "Session established"}

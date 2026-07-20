@@ -10,9 +10,10 @@ import { ToastContainer } from "react-toastify";
 import Verify from "./components/pages/Verify";
 import AuthRequiredRoute from "./components/middlewares/AuthRequiredRoute";
 import Dashboard from "./components/pages/Dashboard";
-import Cook from "./components/pages/Cook";
 import Share from "./components/pages/Share";
 import Chat from "./components/pages/Chat";
+import { GoogleCallback } from "./components/pages/GoogleCallback";
+import Cook from "./components/pages/Cook";
 
 function App() {
   const queryClient = new QueryClient({
@@ -30,6 +31,7 @@ function App() {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/google/callback" element={<GoogleCallback />} />
               <Route
                 path="/auth/*"
                 element={

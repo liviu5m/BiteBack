@@ -131,7 +131,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-8 overflow-y-scroll h-full">
+          <div className="flex flex-col gap-8 overflow-y-scroll h-full no-scrollbar">
             {items && items.length == 0 && <p className="text-base sm:text-lg md:text-xl font-semibold text-center px-2">No Food in the Virtual Fridge</p>}
             {actionRequired.length > 0 && (
               <div className="flex flex-col gap-3">

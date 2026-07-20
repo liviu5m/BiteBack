@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { logoutUser } from "../../api/user";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAppContext } from "@/lib/AppProvider";
 
 const MENU_ITEMS = [
   { id: "fridge", label: "Fridge", icon: Home, url: "/dashboard" },
@@ -19,6 +20,7 @@ const MENU_ITEMS = [
 ] as const;
 
 const Sidebar = () => {
+  const { user } = useAppContext();
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient()
@@ -89,6 +91,10 @@ const Sidebar = () => {
       </div>
 
       <div className="hidden lg:flex border-t border-gray-100 pt-5 flex-col gap-1">
+        <div className="px-5 pb-3">
+          <p className="text-sm text-gray-500">Signed in as</p>
+          <p className="font-bold text-gray-900">{user?.username || "Guest"}</p>
+        </div>
         <div className="flex items-center gap-3 px-5 py-3 rounded-2xl text-lg font-medium text-rose-500/80 hover:text-rose-600 cursor-pointer transition-colors" onClick={() => logout()}>
           <LogOut size={22} />
           <span>Sign Out</span>

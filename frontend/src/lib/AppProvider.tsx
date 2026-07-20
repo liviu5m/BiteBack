@@ -33,6 +33,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     retry: false,
   });
 
+  console.log(user);
+
+
 
   useEffect(() => {
     localStorage.setItem("items", JSON.stringify(checkedItems));
